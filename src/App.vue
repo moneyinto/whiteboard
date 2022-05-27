@@ -1,14 +1,18 @@
 <template>
-	<WhiteBoard :width="1920" :height="1080" />
+	<WhiteBoard :width="width" :height="height" />
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import WhiteBoard from "./components/WhiteBoard/index.vue";
+const width = ref(window.innerWidth);
+const height = ref(window.innerHeight);
 </script>
 
 <style lang="scss">
 html, body {
 	margin: 0;
+	overflow: hidden;
 }
 
 #app {

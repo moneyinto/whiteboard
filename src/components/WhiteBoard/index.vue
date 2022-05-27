@@ -1,18 +1,20 @@
 <template>
-    <canvas
-        ref="canvas"
-        :width="canvasWidth"
-        :height="canvasHeighth"
-        :style="{
-            width: canvasDomWidth,
-            height: canvasDomHeight,
-            cursor: 'crosshair'
-        }"
-    ></canvas>
+	<div class="white-board">
+		<canvas
+			ref="canvas"
+			:width="canvasWidth"
+			:height="canvasHeighth"
+			:style="{
+				width: canvasDomWidth,
+				height: canvasDomHeight,
+				cursor: 'crosshair'
+			}"
+		></canvas>
+	</div>
 </template>
 
 <script setup lang="ts">
-import { defineProps, computed, ref, nextTick, PropType } from "vue";
+import { defineProps, computed, ref, nextTick } from "vue";
 import useHandlePointer from "./hooks/useHandlePointer";
 import { IElement, ICanvasConfig } from "./types";
 const canvasScale = window.devicePixelRatio;
@@ -43,6 +45,9 @@ const canvasConfig = ref<ICanvasConfig>({
     zoom: 1
 });
 
+// 是否支持触摸
+const canTouch = "ontouchstart" in (window as any);
+
 // 绘制元素集合
 const elements = ref<IElement[]>([]);
 const { handleDown, handleMove, handleUp } = useHandlePointer(canvas, context, elements, canvasConfig);
@@ -50,9 +55,24 @@ const { handleDown, handleMove, handleUp } = useHandlePointer(canvas, context, e
 nextTick(() => {
     if (canvas.value) {
         context.value = canvas.value.getContext("2d");
-        canvas.value.addEventListener("pointerdown", handleDown);
-        canvas.value.addEventListener("pointermove", handleMove);
-        canvas.value.addEventListener("pointerup", handleUp);
+        context.value?.scale(canvasScale, canvasScale);
+        if (canTouch) {
+            canvas.value.addEventListener("touchstart", handleDown);
+            canvas.value.addEventListener("touchmove", handleMove);
+            canvas.value.addEventListener("touchend", handleUp);
+        } else {
+            canvas.value.addEventListener("pointerdown", handleDown);
+            canvas.value.addEventListener("pointermove", handleMove);
+            canvas.value.addEventListener("pointerup", handleUp);
+        }
     }
 });
 </script>
+
+<style scoped>
+.white-board {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+</style>

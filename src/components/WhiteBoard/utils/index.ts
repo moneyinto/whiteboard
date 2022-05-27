@@ -23,15 +23,17 @@ export const createRandomCode = (len = 10): string => {
  * @returns
  */
 export const getPointPosition = (
-    event: MouseEvent,
+    event: PointerEvent | TouchEvent,
     canvasConfig: ICanvasConfig
 ) => {
+    const x = (event instanceof TouchEvent) ? event.targetTouches[0].clientX : event.clientX;
+    const y = (event instanceof TouchEvent) ? event.targetTouches[0].clientY : event.clientY;
     return {
         x:
-            (event.clientX - canvasConfig.offsetX) / canvasConfig.zoom +
+            (x - canvasConfig.offsetX) / canvasConfig.zoom +
             canvasConfig.scrollX,
         y:
-            (event.clientY - canvasConfig.offsetY) / canvasConfig.zoom +
+            (y - canvasConfig.offsetY) / canvasConfig.zoom +
             canvasConfig.scrollY
     };
 };

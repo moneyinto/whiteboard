@@ -39,7 +39,6 @@ export default (context: Ref<CanvasRenderingContext2D | null>, canvasConfig: Ref
     };
 
     const renderElements = (elements: IElement[]) => {
-        console.log("draw");
         // 绘制canvas
         elements.forEach(element => {
             switch(element.type) {
