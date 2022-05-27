@@ -1,22 +1,18 @@
 <template>
-    <div class="white-board">
-        <canvas
-            ref="canvas"
-            :width="canvasWidth"
-            :height="canvasHeighth"
-            :style="{
-                width: canvasDomWidth,
-                height: canvasDomHeight
-            }"
-            @mousedown="handleDown"
-            @mousemove="handleMove"
-            @mouseup="handleUp"
-        ></canvas>
-    </div>
+    <canvas
+        ref="canvas"
+        :width="canvasWidth"
+        :height="canvasHeighth"
+        :style="{
+            width: canvasDomWidth,
+            height: canvasDomHeight,
+            cursor: 'crosshair'
+        }"
+    ></canvas>
 </template>
 
 <script setup lang="ts">
-import { defineProps, computed, ref, nextTick } from "vue";
+import { defineProps, computed, ref, nextTick, PropType } from "vue";
 import useHandlePointer from "./hooks/useHandlePointer";
 import { IElement, ICanvasConfig } from "./types";
 const canvasScale = window.devicePixelRatio;
@@ -38,12 +34,6 @@ const canvasDomHeight = computed(() => props.height +  "px");
 const canvas = ref<HTMLCanvasElement | null>(null);
 const context = ref<CanvasRenderingContext2D | null>(null);
 
-nextTick(() => {
-    if (canvas.value) {
-        context.value = canvas.value.getContext("2d");
-    }
-});
-
 // 画布配置
 const canvasConfig = ref<ICanvasConfig>({
     offsetX: 0,
@@ -55,9 +45,14 @@ const canvasConfig = ref<ICanvasConfig>({
 
 // 绘制元素集合
 const elements = ref<IElement[]>([]);
-const { handleDown, handleMove, handleUp } = useHandlePointer(context, elements, canvasConfig);
+const { handleDown, handleMove, handleUp } = useHandlePointer(canvas, context, elements, canvasConfig);
 
 nextTick(() => {
-    console.log(canvas.value);
+    if (canvas.value) {
+        context.value = canvas.value.getContext("2d");
+        canvas.value.addEventListener("pointerdown", handleDown);
+        canvas.value.addEventListener("pointermove", handleMove);
+        canvas.value.addEventListener("pointerup", handleUp);
+    }
 });
 </script>

@@ -5,11 +5,13 @@ import { createRandomCode } from "../utils";
 export default (elements: Ref<IElement[]>) => {
     const createElement = (element: IElement) => {
         elements.value.push(element);
+        return element;
     };
 
     const createPenElement = ({ x, y }: { x: number; y: number }) => {
-        createElement({
+        return createElement({
             id: createRandomCode(),
+            type: "pen",
             width: 0,
             height: 0,
             x,
@@ -22,6 +24,6 @@ export default (elements: Ref<IElement[]>) => {
     };
 
     return {
-        createPenElement,
+        createPenElement
     };
 };

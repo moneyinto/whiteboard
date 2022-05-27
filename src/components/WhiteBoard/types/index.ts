@@ -1,4 +1,6 @@
 /**
+ * type: 元素类型 (pen: 笔记)
+ * 
  * angle: 旋转角度
  *
  * isDelete: 是否删除
@@ -15,6 +17,7 @@
  */
 interface IBaseElement {
     id: string;
+    type: "pen";
     angle: number;
     isDelete: boolean;
     locked: boolean;
@@ -26,7 +29,7 @@ interface IBaseElement {
 
 export type IElement = IPenElement;
 
-type IPoint = [number, number];
+export type IPoint = number[];
 
 export interface IPenElement extends IBaseElement {
     points: IPoint[];
@@ -50,3 +53,5 @@ export interface ICanvasConfig {
     scrollY: number;
     zoom: number;
 }
+
+export type IBoundsCoords = [number, number, number, number];

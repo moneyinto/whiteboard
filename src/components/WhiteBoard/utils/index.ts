@@ -1,10 +1,11 @@
-import { ICanvasConfig } from "../types";
+import getStroke, { StrokeOptions } from "perfect-freehand";
+import { IBoundsCoords, ICanvasConfig, IElement, IPoint } from "../types";
 
 /**
  * 生成随机码
  * @param len 随机码长度
  */
-export const createRandomCode = (len = 10) => {
+export const createRandomCode = (len = 10): string => {
     const charset = `_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`;
     const maxLen = charset.length;
     let ret = "";
@@ -15,12 +16,149 @@ export const createRandomCode = (len = 10) => {
     return ret;
 };
 
+/**
+ * 获取鼠标点在canvas的坐标
+ * @param event
+ * @param canvasConfig
+ * @returns
+ */
 export const getPointPosition = (
     event: MouseEvent,
     canvasConfig: ICanvasConfig
 ) => {
     return {
-        x: (event.clientX - canvasConfig.offsetX) / canvasConfig.zoom + canvasConfig.scrollX,
-        y: (event.clientY - canvasConfig.offsetY) / canvasConfig.zoom + canvasConfig.scrollY
+        x:
+            (event.clientX - canvasConfig.offsetX) / canvasConfig.zoom +
+            canvasConfig.scrollX,
+        y:
+            (event.clientY - canvasConfig.offsetY) / canvasConfig.zoom +
+            canvasConfig.scrollY
     };
+};
+
+export const getBoundsCoordsFromPoints = (points: IPoint[]): IBoundsCoords => {
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    for (const [x, y] of points) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+    }
+
+    return [minX, minY, maxX, maxY];
+};
+
+/**
+ * 获取元素形成矩形最小坐标位置及最大坐标位置
+ * @param element
+ */
+export const getElementBoundsCoords = (element: IElement): IBoundsCoords => {
+    if (element.type === "pen") {
+        const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(
+            element.points
+        );
+        return [
+            minX + element.x,
+            minY + element.y,
+            maxX + element.x,
+            maxY + element.y
+        ];
+    }
+
+    return [
+        element.x,
+        element.y,
+        element.x + element.width,
+        element.y + element.height
+    ];
+};
+
+// throttle callback to execute once per animation frame
+export const throttleRAF = <T extends any[]>(fn: (...args: T) => void) => {
+    let handle: number | null = null;
+    let lastArgs: T | null = null;
+    let callback: ((...args: T) => void) | null = null;
+    const ret = (...args: T) => {
+        if (process.env.NODE_ENV === "test") {
+            fn(...args);
+            return;
+        }
+        lastArgs = args;
+        callback = fn;
+        if (handle === null) {
+            handle = window.requestAnimationFrame(() => {
+                handle = null;
+                lastArgs = null;
+                callback = null;
+                fn(...args);
+            });
+        }
+    };
+    ret.flush = () => {
+        if (handle !== null) {
+            cancelAnimationFrame(handle);
+            handle = null;
+        }
+        if (lastArgs) {
+            const _lastArgs = lastArgs;
+            const _callback = callback;
+            lastArgs = null;
+            callback = null;
+            if (_callback !== null) {
+                _callback(..._lastArgs);
+            }
+        }
+    };
+    ret.cancel = () => {
+        lastArgs = null;
+        callback = null;
+        if (handle !== null) {
+            cancelAnimationFrame(handle);
+            handle = null;
+        }
+    };
+    return ret;
+};
+
+const TO_FIXED_PRECISION = /(\s?[A-Z]?,?-?[0-9]*\.[0-9]{0,2})(([0-9]|e|-)*)/g;
+function med(A: number[], B: number[]) {
+    return [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2];
+}
+/**
+ * 处理笔记转化为svg path
+ * @param points
+ * @returns
+ */
+export const getPenSvgPath = (points: number[][]) => {
+    const options: StrokeOptions = {
+        simulatePressure: true, // 是否基于速度模拟压力
+        size: 2 * 4.25,
+        thinning: 0.6,
+        smoothing: 0.5,
+        streamline: 0.5,
+        easing: (t) => Math.sin((t * Math.PI) / 2)
+    };
+
+    const storkePoints = getStroke(points, options);
+    const max = storkePoints.length - 1;
+    const svgPathData = storkePoints
+        .reduce(
+            (acc, point, i, arr) => {
+                if (i === max) {
+                    acc.push(point, med(point, arr[0]), "L", arr[0], "Z");
+                } else {
+                    acc.push(point, med(point, arr[i + 1]));
+                }
+                return acc;
+            },
+            ["M", points[0], "Q"]
+        )
+        .join(" ")
+        .replace(TO_FIXED_PRECISION, "$1");
+    const path = new Path2D(svgPathData);
+    return path;
 };
