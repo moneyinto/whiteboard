@@ -126,6 +126,43 @@ export const throttleRAF = <T extends any[]>(fn: (...args: T) => void) => {
     return ret;
 };
 
+/**
+ * 节流
+ * @param fn 
+ * @param wait 
+ * @returns 
+ */
+export const throttle = (fn: () => void, wait: number) => {
+    const callback = fn;    
+    let timerId = 0;
+
+    // 是否是第一次执行
+    let firstInvoke = true;
+
+    function throttled() {
+        // 如果是第一次触发，直接执行
+        if (firstInvoke) {
+            callback();
+            firstInvoke = false;
+            return ;
+        }
+
+        // 如果定时器已存在，直接返回。        
+        if (timerId) {
+            return ;
+        }
+
+        timerId = setTimeout(function() {  
+            clearTimeout(timerId);
+            timerId = 0;
+            callback();
+        }, wait);
+    }
+
+    // 返回一个闭包
+    return throttled;
+};
+
 const TO_FIXED_PRECISION = /(\s?[A-Z]?,?-?[0-9]*\.[0-9]{0,2})(([0-9]|e|-)*)/g;
 function med(A: number[], B: number[]) {
     return [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2];

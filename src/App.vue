@@ -1,12 +1,9 @@
 <template>
-	<WhiteBoard :width="width" :height="height" />
+	<WhiteBoard />
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
 import WhiteBoard from "./components/WhiteBoard/index.vue";
-const width = ref(window.innerWidth);
-const height = ref(window.innerHeight);
 </script>
 
 <style lang="scss">
@@ -20,5 +17,7 @@ html, body {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	color: #2c3e50;
+	width: 100vw;
+	height: 100vh;
 }
 </style>

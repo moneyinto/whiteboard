@@ -6,14 +6,14 @@ import useRenderElement from "./useRenderElement";
 import useUpdateElement from "./useUpdateElement";
 
 export default (
-    canvas: HTMLCanvasElement,
-    context: Ref<CanvasRenderingContext2D | null>,
+    canvas: Ref<HTMLCanvasElement>,
+    context: Ref<CanvasRenderingContext2D>,
     elements: Ref<IElement[]>,
     canvasConfig: Ref<ICanvasConfig>
 ) => {
     const { createPenElement } = useCreateElement(elements);
     const { updateElement } = useUpdateElement(elements);
-    const { renderElements } = useRenderElement(context, canvasConfig);
+    const { renderElements } = useRenderElement(canvas, context, canvasConfig);
     let targetElement: IElement | null = null;
 
     const handleDown = (event: PointerEvent | TouchEvent) => {
@@ -34,7 +34,6 @@ export default (
                 break;
             }
         }
-        context.value?.clearRect(0, 0, 1920,  1080);
         renderElements(elements.value);
     });
 
