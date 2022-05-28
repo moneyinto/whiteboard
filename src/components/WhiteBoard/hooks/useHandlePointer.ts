@@ -12,7 +12,7 @@ export default (
     elements: Ref<IElement[]>,
     canvasConfig: ICanvasConfig
 ) => {
-    const { createPenElement } = useCreateElement(elements);
+    const { createPenElement } = useCreateElement(elements, canvasConfig);
     const { updateElement } = useUpdateElement(elements);
     const { renderElements } = useRenderElement(canvas, context, canvasConfig);
     let targetElement: IElement | null = null;

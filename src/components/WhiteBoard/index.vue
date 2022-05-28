@@ -14,6 +14,7 @@
         <ToolBar
             :optionType="canvasConfig.optionType"
             @updateOptionType="updateOptionType"
+            @updateLineWidth="updateLineWidth"
         />
 	</div>
 </template>
@@ -23,6 +24,7 @@ import { ref, nextTick, reactive } from "vue";
 import ToolBar from "./components/toolbar.vue";
 import useHandlePointer from "./hooks/useHandlePointer";
 import useRenderElement from "./hooks/useRenderElement";
+import useTool from "./hooks/useTool";
 import { IElement, ICanvasConfig } from "./types";
 import { OPTION_TYPE } from "./config";
 import { throttle } from "./utils";
@@ -43,7 +45,8 @@ const canvasConfig = reactive<ICanvasConfig>({
     scrollX: 0,
     scrollY: 0,
     zoom: 1,
-    optionType: OPTION_TYPE.MOUSE
+    optionType: OPTION_TYPE.MOUSE,
+    lineWidth: 5
 });
 
 // 是否支持触摸
@@ -55,9 +58,7 @@ const { handleDown, handleMove, handleUp } = useHandlePointer(canvas, context, e
 const { renderElements } = useRenderElement(canvas, context, canvasConfig);
 
 // tool工具update事件
-const updateOptionType = (type: string) => {
-    canvasConfig.optionType = type;
-};
+const { updateOptionType, updateLineWidth } = useTool(canvasConfig);
 
 nextTick(() => {
     if (!canvas.value || !whiteboard.value) return;
@@ -73,8 +74,8 @@ nextTick(() => {
         canvas.value.addEventListener("pointerup", handleUp);
     }
 
+    // 区域大小变化重置canvas
     const resize = throttle(() => {
-        console.log("==== 区域发生变化");
         if (!whiteboard.value || !context.value) return;
         canvasWidth.value = whiteboard.value.clientWidth * canvasScale;
         canvasHeighth.value = whiteboard.value.clientHeight * canvasScale;
@@ -101,5 +102,8 @@ nextTick(() => {
 	height: 100%;
 	overflow: hidden;
     position: relative;
+    color: #333;
+    font-family: system-ui, BlinkMacSystemFont, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    user-select: none;
 }
 </style>

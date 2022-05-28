@@ -33,6 +33,7 @@ export type IPoint = number[];
 
 export interface IPenElement extends IBaseElement {
     points: IPoint[];
+    lineWidth: number;
 }
 
 /**
@@ -55,6 +56,7 @@ export interface ICanvasConfig {
     scrollY: number;
     zoom: number;
     optionType: string;
+    lineWidth: number;
 }
 
 export type IBoundsCoords = [number, number, number, number];

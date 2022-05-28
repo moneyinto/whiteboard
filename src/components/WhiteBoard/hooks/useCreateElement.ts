@@ -1,14 +1,15 @@
 import { Ref } from "vue";
-import { IElement } from "../types";
+import { ICanvasConfig, IElement } from "../types";
 import { createRandomCode } from "../utils";
 
-export default (elements: Ref<IElement[]>) => {
+export default (elements: Ref<IElement[]>, canvasConfig: ICanvasConfig) => {
     const createElement = (element: IElement) => {
         elements.value.push(element);
         return element;
     };
 
     const createPenElement = ({ x, y }: { x: number; y: number }) => {
+        console.log(canvasConfig.lineWidth);
         return createElement({
             id: createRandomCode(),
             type: "pen",
@@ -19,7 +20,8 @@ export default (elements: Ref<IElement[]>) => {
             points: [[0, 0]],
             angle: 0,
             isDelete: false,
-            locked: false
+            locked: false,
+            lineWidth: canvasConfig.lineWidth
         });
     };
 

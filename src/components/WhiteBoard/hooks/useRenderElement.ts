@@ -30,7 +30,7 @@ export default (canvas: Ref<HTMLCanvasElement | null>, context: Ref<CanvasRender
         // 绘制笔记
         // context.value.lineWidth = 12;
         // context.value.fillStyle = "rgba(0, 0, 0, .5)";
-        const path = getPenSvgPath(element.points);
+        const path = getPenSvgPath(element.points, element.lineWidth);
         context.value.fill(path);
         context.value.stroke();
 
