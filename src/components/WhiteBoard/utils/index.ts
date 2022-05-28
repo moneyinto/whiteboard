@@ -22,7 +22,7 @@ export const createRandomCode = (len = 10): string => {
  * @param canvasConfig
  * @returns
  */
-export const getPointPosition = (
+export const getCanvasPointPosition = (
     event: PointerEvent | TouchEvent,
     canvasConfig: ICanvasConfig
 ) => {
@@ -35,6 +35,26 @@ export const getPointPosition = (
         y:
             (y - canvasConfig.offsetY) / canvasConfig.zoom +
             canvasConfig.scrollY
+    };
+};
+
+/**
+ * 获取鼠标点在黑板的坐标
+ * @param event
+ * @param canvasConfig
+ * @returns
+ */
+ export const getWhiteBoardPointPosition = (
+    event: PointerEvent | TouchEvent,
+    canvasConfig: ICanvasConfig
+) => {
+    const x = (event instanceof TouchEvent) ? event.targetTouches[0].clientX : event.clientX;
+    const y = (event instanceof TouchEvent) ? event.targetTouches[0].clientY : event.clientY;
+    return {
+        x:
+            (x - canvasConfig.offsetX) / canvasConfig.zoom,
+        y:
+            (y - canvasConfig.offsetY) / canvasConfig.zoom
     };
 };
 

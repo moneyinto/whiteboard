@@ -7,17 +7,18 @@
 			:style="{
 				width: canvasDomWidth,
 				height: canvasDomHeight,
-				cursor: 'crosshair'
+				cursor: {MOVE: 'default', PEN: 'crosshair'}[canvasConfig.optionType]
 			}"
 		></canvas>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { defineProps, computed, ref, nextTick } from "vue";
+import { ref, nextTick } from "vue";
 import useHandlePointer from "./hooks/useHandlePointer";
 import useRenderElement from "./hooks/useRenderElement";
 import { IElement, ICanvasConfig } from "./types";
+import { OPTION_TYPE } from "./config";
 import { throttle } from "./utils";
 const canvasScale = window.devicePixelRatio;
 
@@ -35,7 +36,8 @@ const canvasConfig = ref<ICanvasConfig>({
     offsetY: 0,
     scrollX: 0,
     scrollY: 0,
-    zoom: 1
+    zoom: 1,
+    optionType: OPTION_TYPE.MOVE
 });
 
 // 是否支持触摸
@@ -62,14 +64,16 @@ nextTick(() => {
 
     const resize = throttle(() => {
         console.log("==== 区域发生变化");
-        canvasWidth.value = whiteboard.value!.clientWidth * canvasScale;
-        canvasHeighth.value = whiteboard.value!.clientHeight * canvasScale;
-        canvasDomWidth.value = whiteboard.value!.clientWidth + "px";
-        canvasDomHeight.value = whiteboard.value!.clientHeight + "px";
+        if (!whiteboard.value || !context.value) return;
+        canvasWidth.value = whiteboard.value.clientWidth * canvasScale;
+        canvasHeighth.value = whiteboard.value.clientHeight * canvasScale;
+        canvasDomWidth.value = whiteboard.value.clientWidth + "px";
+        canvasDomHeight.value = whiteboard.value.clientHeight + "px";
 
-        context.value!.scale(canvasScale, canvasScale);
-        context.value!.setTransform(1, 0, 0, 1, 0, 0);
-        context.value!.save();
+        context.value.scale(canvasScale, canvasScale);
+        context.value.setTransform(1, 0, 0, 1, 0, 0);
+        context.value.save();
+        elements.value = JSON.parse(localStorage.getItem("STORE_ELEMENTS") || "[]");
         console.log(elements.value);
         nextTick(() => {
             renderElements(elements.value);
@@ -85,5 +89,6 @@ nextTick(() => {
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
+    position: relative;
 }
 </style>

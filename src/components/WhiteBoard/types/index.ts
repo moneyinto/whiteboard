@@ -45,6 +45,8 @@ export interface IPenElement extends IBaseElement {
  * scrollY: canvas纵向位移
  * 
  * zoom: canvas缩放比例
+ * 
+ * optionType: 操作类型
  */
 export interface ICanvasConfig {
     offsetX: number;
@@ -52,6 +54,7 @@ export interface ICanvasConfig {
     scrollX: number;
     scrollY: number;
     zoom: number;
+    optionType: string;
 }
 
 export type IBoundsCoords = [number, number, number, number];
