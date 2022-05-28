@@ -47,6 +47,7 @@ const { handleDown, handleMove, handleUp } = useHandlePointer(canvas, context, e
 const { renderElements } = useRenderElement(canvas, context, canvasConfig);
 
 nextTick(() => {
+    if (!canvas.value || !whiteboard.value) return;
     context.value = canvas.value.getContext("2d");
 
     if (canTouch) {
@@ -61,14 +62,14 @@ nextTick(() => {
 
     const resize = throttle(() => {
         console.log("==== 区域发生变化");
-        canvasWidth.value = whiteboard.value?.clientWidth * canvasScale;
-        canvasHeighth.value = whiteboard.value?.clientHeight * canvasScale;
-        canvasDomWidth.value = whiteboard.value?.clientWidth + "px";
-        canvasDomHeight.value = whiteboard.value?.clientHeight + "px";
+        canvasWidth.value = whiteboard.value!.clientWidth * canvasScale;
+        canvasHeighth.value = whiteboard.value!.clientHeight * canvasScale;
+        canvasDomWidth.value = whiteboard.value!.clientWidth + "px";
+        canvasDomHeight.value = whiteboard.value!.clientHeight + "px";
 
-        context.value.scale(canvasScale, canvasScale);
-        context.value.setTransform(1, 0, 0, 1, 0, 0);
-        context.value.save();
+        context.value!.scale(canvasScale, canvasScale);
+        context.value!.setTransform(1, 0, 0, 1, 0, 0);
+        context.value!.save();
         console.log(elements.value);
         nextTick(() => {
             renderElements(elements.value);

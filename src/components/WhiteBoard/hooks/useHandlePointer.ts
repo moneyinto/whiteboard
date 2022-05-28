@@ -6,8 +6,8 @@ import useRenderElement from "./useRenderElement";
 import useUpdateElement from "./useUpdateElement";
 
 export default (
-    canvas: Ref<HTMLCanvasElement>,
-    context: Ref<CanvasRenderingContext2D>,
+    canvas: Ref<HTMLCanvasElement | null>,
+    context: Ref<CanvasRenderingContext2D | null>,
     elements: Ref<IElement[]>,
     canvasConfig: Ref<ICanvasConfig>
 ) => {

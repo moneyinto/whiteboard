@@ -2,7 +2,7 @@ import { Ref } from "vue";
 import { ICanvasConfig, IElement, IPenElement } from "../types";
 import { getElementBoundsCoords, getPenSvgPath } from "../utils";
 
-export default (canvas: Ref<HTMLCanvasElement>, context: Ref<CanvasRenderingContext2D>, canvasConfig: Ref<ICanvasConfig>) => {
+export default (canvas: Ref<HTMLCanvasElement | null>, context: Ref<CanvasRenderingContext2D | null>, canvasConfig: Ref<ICanvasConfig>) => {
     // 绘制笔记
     const renderPenElement = (element: IPenElement) => {
         // 点少于两个时不进行绘制
@@ -39,6 +39,7 @@ export default (canvas: Ref<HTMLCanvasElement>, context: Ref<CanvasRenderingCont
     };
 
     const renderElements = (elements: IElement[]) => {
+        if (!canvas.value || !context.value) return;
         context.value.clearRect(0, 0, canvas.value.width, canvas.value.height);
         // 绘制canvas
         elements.forEach(element => {
