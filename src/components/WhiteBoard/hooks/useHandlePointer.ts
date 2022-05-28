@@ -46,6 +46,7 @@ export default (
                 break;
             }
             case OPTION_TYPE.PEN: {
+                if (!targetElement) return;
                 const { x, y } = getCanvasPointPosition(event, canvasConfig);
                 drawOnCanvas(x, y);
                 break;

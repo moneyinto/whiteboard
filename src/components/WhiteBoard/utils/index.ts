@@ -29,12 +29,8 @@ export const getCanvasPointPosition = (
     const x = (event instanceof TouchEvent) ? event.targetTouches[0].clientX : event.clientX;
     const y = (event instanceof TouchEvent) ? event.targetTouches[0].clientY : event.clientY;
     return {
-        x:
-            (x - canvasConfig.offsetX) / canvasConfig.zoom +
-            canvasConfig.scrollX,
-        y:
-            (y - canvasConfig.offsetY) / canvasConfig.zoom +
-            canvasConfig.scrollY
+        x: (x - canvasConfig.offsetX) / canvasConfig.zoom - canvasConfig.scrollX,
+        y: (y - canvasConfig.offsetY) / canvasConfig.zoom - canvasConfig.scrollY
     };
 };
 
