@@ -7,14 +7,20 @@
 			:style="{
 				width: canvasDomWidth,
 				height: canvasDomHeight,
-				cursor: {MOVE: 'default', PEN: 'crosshair'}[canvasConfig.optionType]
+				cursor: {MOUSE: 'grabbing', PEN: 'crosshair'}[canvasConfig.optionType]
 			}"
 		></canvas>
+
+        <ToolBar
+            :optionType="canvasConfig.optionType"
+            @updateOptionType="updateOptionType"
+        />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from "vue";
+import { ref, nextTick, reactive } from "vue";
+import ToolBar from "./components/toolbar.vue";
 import useHandlePointer from "./hooks/useHandlePointer";
 import useRenderElement from "./hooks/useRenderElement";
 import { IElement, ICanvasConfig } from "./types";
@@ -31,13 +37,13 @@ const canvasDomWidth = ref(0 + "px");
 const canvasDomHeight = ref(0 + "px");
 
 // 画布配置
-const canvasConfig = ref<ICanvasConfig>({
+const canvasConfig = reactive<ICanvasConfig>({
     offsetX: 0,
     offsetY: 0,
     scrollX: 0,
     scrollY: 0,
     zoom: 1,
-    optionType: OPTION_TYPE.MOVE
+    optionType: OPTION_TYPE.MOUSE
 });
 
 // 是否支持触摸
@@ -47,6 +53,11 @@ const canTouch = "ontouchstart" in (window as any);
 const elements = ref<IElement[]>([]);
 const { handleDown, handleMove, handleUp } = useHandlePointer(canvas, context, elements, canvasConfig);
 const { renderElements } = useRenderElement(canvas, context, canvasConfig);
+
+// tool工具update事件
+const updateOptionType = (type: string) => {
+    canvasConfig.optionType = type;
+};
 
 nextTick(() => {
     if (!canvas.value || !whiteboard.value) return;

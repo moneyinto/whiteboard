@@ -2,7 +2,7 @@ import { Ref } from "vue";
 import { ICanvasConfig, IElement, IPenElement } from "../types";
 import { getElementBoundsCoords, getPenSvgPath } from "../utils";
 
-export default (canvas: Ref<HTMLCanvasElement | null>, context: Ref<CanvasRenderingContext2D | null>, canvasConfig: Ref<ICanvasConfig>) => {
+export default (canvas: Ref<HTMLCanvasElement | null>, context: Ref<CanvasRenderingContext2D | null>, canvasConfig: ICanvasConfig) => {
     // 绘制笔记
     const renderPenElement = (element: IPenElement) => {
         // 点少于两个时不进行绘制
@@ -11,8 +11,8 @@ export default (canvas: Ref<HTMLCanvasElement | null>, context: Ref<CanvasRender
         const [x1, y1, x2, y2] = getElementBoundsCoords(element);
 
         // cx, cy 最小矩形中心点在canvas中的位置
-        const cx = (x1 + x2) / 2 + canvasConfig.value.scrollX;
-        const cy = (y1 + y2) / 2 + canvasConfig.value.scrollY;
+        const cx = (x1 + x2) / 2 + canvasConfig.scrollX;
+        const cy = (y1 + y2) / 2 + canvasConfig.scrollY;
 
         // 笔记起始点相对于最小矩形中心点偏移位置
         const shiftX = (x2 - x1) / 2 - (element.x - x1);

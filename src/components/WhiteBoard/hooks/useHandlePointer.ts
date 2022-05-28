@@ -10,7 +10,7 @@ export default (
     canvas: Ref<HTMLCanvasElement | null>,
     context: Ref<CanvasRenderingContext2D | null>,
     elements: Ref<IElement[]>,
-    canvasConfig: Ref<ICanvasConfig>
+    canvasConfig: ICanvasConfig
 ) => {
     const { createPenElement } = useCreateElement(elements);
     const { updateElement } = useUpdateElement(elements);
@@ -19,14 +19,14 @@ export default (
     let startPoint: IPoint | null = null;
 
     const handleDown = (event: PointerEvent | TouchEvent) => {
-        switch(canvasConfig.value.optionType) {
-            case OPTION_TYPE.MOVE: {
-                const { x, y } = getWhiteBoardPointPosition(event, canvasConfig.value);
+        switch(canvasConfig.optionType) {
+            case OPTION_TYPE.MOUSE: {
+                const { x, y } = getWhiteBoardPointPosition(event, canvasConfig);
                 startPoint = [x, y];
                 break;
             }
             case OPTION_TYPE.PEN: {
-                const { x, y } = getCanvasPointPosition(event, canvasConfig.value);
+                const { x, y } = getCanvasPointPosition(event, canvasConfig);
                 targetElement = createPenElement({ x, y });
                 break;
             }
@@ -34,19 +34,19 @@ export default (
     };
 
     const handleMove = throttleRAF((event: PointerEvent | TouchEvent) => {
-        switch(canvasConfig.value.optionType) {
-            case OPTION_TYPE.MOVE: {
+        switch(canvasConfig.optionType) {
+            case OPTION_TYPE.MOUSE: {
                 if (startPoint) {
-                    const { x, y } = getWhiteBoardPointPosition(event, canvasConfig.value);
-                    canvasConfig.value.scrollX += (x - startPoint[0]);
-                    canvasConfig.value.scrollY += (y - startPoint[1]);
+                    const { x, y } = getWhiteBoardPointPosition(event, canvasConfig);
+                    canvasConfig.scrollX += (x - startPoint[0]);
+                    canvasConfig.scrollY += (y - startPoint[1]);
                     startPoint = [x, y];
                     renderElements(elements.value);
                 }
                 break;
             }
             case OPTION_TYPE.PEN: {
-                const { x, y } = getCanvasPointPosition(event, canvasConfig.value);
+                const { x, y } = getCanvasPointPosition(event, canvasConfig);
                 drawOnCanvas(x, y);
                 break;
             }
