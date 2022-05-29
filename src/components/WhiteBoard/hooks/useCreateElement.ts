@@ -9,7 +9,6 @@ export default (elements: Ref<IElement[]>, canvasConfig: ICanvasConfig) => {
     };
 
     const createPenElement = ({ x, y }: { x: number; y: number }) => {
-        console.log(canvasConfig.lineWidth);
         return createElement({
             id: createRandomCode(),
             type: "pen",
@@ -21,7 +20,8 @@ export default (elements: Ref<IElement[]>, canvasConfig: ICanvasConfig) => {
             angle: 0,
             isDelete: false,
             locked: false,
-            lineWidth: canvasConfig.lineWidth
+            lineWidth: canvasConfig.lineWidth,
+            strokeColor: canvasConfig.strokeColor
         });
     };
 

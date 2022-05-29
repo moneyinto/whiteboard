@@ -12,9 +12,9 @@
 		></canvas>
 
         <ToolBar
-            :optionType="canvasConfig.optionType"
-            @updateOptionType="updateOptionType"
-            @updateLineWidth="updateLineWidth"
+            v-model:strokeColor="canvasConfig.strokeColor"
+            v-model:optionType="canvasConfig.optionType"
+            v-model:lineWidth="canvasConfig.lineWidth"
         />
 	</div>
 </template>
@@ -24,7 +24,6 @@ import { ref, nextTick, reactive } from "vue";
 import ToolBar from "./components/toolbar.vue";
 import useHandlePointer from "./hooks/useHandlePointer";
 import useRenderElement from "./hooks/useRenderElement";
-import useTool from "./hooks/useTool";
 import { IElement, ICanvasConfig } from "./types";
 import { OPTION_TYPE } from "./config";
 import { throttle } from "./utils";
@@ -46,7 +45,8 @@ const canvasConfig = reactive<ICanvasConfig>({
     scrollY: 0,
     zoom: 1,
     optionType: OPTION_TYPE.MOUSE,
-    lineWidth: 5
+    lineWidth: 5,
+    strokeColor: "#000000"
 });
 
 // 是否支持触摸
@@ -56,9 +56,6 @@ const canTouch = "ontouchstart" in (window as any);
 const elements = ref<IElement[]>([]);
 const { handleDown, handleMove, handleUp } = useHandlePointer(canvas, context, elements, canvasConfig);
 const { renderElements } = useRenderElement(canvas, context, canvasConfig);
-
-// tool工具update事件
-const { updateOptionType, updateLineWidth } = useTool(canvasConfig);
 
 nextTick(() => {
     if (!canvas.value || !whiteboard.value) return;

@@ -22,6 +22,15 @@
         <div class="wb-setting">
             <div class="wb-setting-card" :class="settingShow ? 'open' : 'close'">
                 <div class="wb-setting-line">
+                    <div class="wb-setting-label">颜色</div>
+                    <div class="wb-setting-value">
+                        <ColorPicker
+                            :inputValue="strokeColor"
+                            @update="(color: string) => selectedColor(color)"
+                        />
+                    </div>
+                </div>
+                <div class="wb-setting-line">
                     <div class="wb-setting-label">粗细</div>
                     <div class="wb-setting-value">
                         <Step
@@ -42,52 +51,57 @@
 
 <script setup lang="ts">
 import { defineEmits, defineProps, ref, toRefs } from "vue";
+import { OPTION_TYPE } from "../config";
 import Mouse from "../icons/mouse.vue";
 import Pen from "../icons/pen.vue";
 import Setting from "../icons/setting.vue";
 import Step from "./step.vue";
-import { OPTION_TYPE } from "../config";
+import ColorPicker from "./colorPicker.vue";
 
-const emit = defineEmits(["updateOptionType", "updateLineWidth"]);
+const emit = defineEmits(["update:optionType", "update:lineWidth", "update:strokeColor"]);
 
 const props = defineProps({
     optionType: {
         type: String,
-        default: OPTION_TYPE.MOUSE
+        requried: true
+    },
+
+    lineWidth: {
+        type: Number,
+        required: true
+    },
+
+    strokeColor: {
+        type: String,
+        required: true
     }
 });
 
-const { optionType } = toRefs(props);
+const { optionType, strokeColor, lineWidth } = toRefs(props);
 
 const settingShow = ref(true);
 
 const selectedMode = (type: string) => {
-    emit("updateOptionType", type);
+    console.log("select mode");
+    emit("update:optionType", type);
 };
 
-const lineWidth = ref(5);
+const selectedColor = (color: string) => {
+    console.log("update color");
+    emit("update:strokeColor", color);
+};
+
 const reduce = () => {
     if (lineWidth.value === 1) return;
-    if (lineWidth.value === 5) {
-        lineWidth.value = 1;
-    } else {
-        lineWidth.value -= 5;
-    }
-    emit("updateLineWidth", lineWidth.value);
+    emit("update:lineWidth", lineWidth.value === 5 ? 1 : lineWidth.value - 5);
 };
 
 const add = () => {
-    if (lineWidth.value === 1) {
-        lineWidth.value = 5;
-    } else {
-        lineWidth.value += 5;
-    }
-    emit("updateLineWidth", lineWidth.value);
+    emit("update:lineWidth", lineWidth.value === 1 ? 5 : lineWidth.value + 5);
 };
 
 const input = (value: number) => {
-    lineWidth.value = value;
-    emit("updateLineWidth", lineWidth.value);
+    emit("update:lineWidth", value);
 };
 </script>
 

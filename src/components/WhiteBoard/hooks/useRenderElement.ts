@@ -28,8 +28,7 @@ export default (canvas: Ref<HTMLCanvasElement | null>, context: Ref<CanvasRender
         context.value.translate(-shiftX, -shiftY);
         
         // 绘制笔记
-        // context.value.lineWidth = 12;
-        // context.value.fillStyle = "rgba(0, 0, 0, .5)";
+        context.value.fillStyle = element.strokeColor;
         const path = getPenSvgPath(element.points, element.lineWidth);
         context.value.fill(path);
         context.value.stroke();
