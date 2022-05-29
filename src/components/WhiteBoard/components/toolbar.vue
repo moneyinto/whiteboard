@@ -52,11 +52,11 @@
 <script setup lang="ts">
 import { defineEmits, defineProps, ref, toRefs } from "vue";
 import { OPTION_TYPE } from "../config";
-import Mouse from "../icons/mouse.vue";
-import Pen from "../icons/pen.vue";
-import Setting from "../icons/setting.vue";
-import Step from "./step.vue";
-import ColorPicker from "./colorPicker.vue";
+import Mouse from "../icons/Mouse.vue";
+import Pen from "../icons/Pen.vue";
+import Setting from "../icons/Setting.vue";
+import Step from "./Step.vue";
+import ColorPicker from "./ColorPicker/index.vue";
 
 const emit = defineEmits(["update:optionType", "update:lineWidth", "update:strokeColor"]);
 
@@ -82,12 +82,10 @@ const { optionType, strokeColor, lineWidth } = toRefs(props);
 const settingShow = ref(true);
 
 const selectedMode = (type: string) => {
-    console.log("select mode");
     emit("update:optionType", type);
 };
 
 const selectedColor = (color: string) => {
-    console.log("update color");
     emit("update:strokeColor", color);
 };
 
@@ -171,12 +169,13 @@ const input = (value: number) => {
 }
 
 .wb-setting-btn svg.close {
-    transform: rotate(180deg);
+    transform: rotate(0deg);
 }
 
 .wb-setting-btn svg {
     height: 20px;
     transition: 0.3s all ease;
+    transform: rotate(180deg);
 }
 
 .wb-setting-card {

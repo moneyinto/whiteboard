@@ -12,8 +12,8 @@
 
 <script setup lang="ts">
 import { defineProps, toRefs, defineEmits } from "vue";
-import Plus from "../icons/plus.vue";
-import Reduce from "../icons/reduce.vue";
+import Plus from "../icons/Plus.vue";
+import Reduce from "../icons/Reduce.vue";
 const props = defineProps({
     inputValue: {
         type: [String, Number],

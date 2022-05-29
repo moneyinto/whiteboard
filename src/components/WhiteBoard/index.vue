@@ -1,32 +1,34 @@
 <template>
-	<div class="white-board" ref="whiteboard">
-		<canvas
-			ref="canvas"
-			:width="canvasWidth"
-			:height="canvasHeighth"
-			:style="{
-				width: canvasDomWidth,
-				height: canvasDomHeight,
-				cursor: {MOUSE: 'grabbing', PEN: 'crosshair'}[canvasConfig.optionType]
-			}"
-		></canvas>
+    <div class="white-board" ref="whiteboard">
+        <canvas
+            ref="canvas"
+            :width="canvasWidth"
+            :height="canvasHeighth"
+            :style="{
+                width: canvasDomWidth,
+                height: canvasDomHeight,
+                cursor: { MOUSE: 'grabbing', PEN: 'crosshair' }[
+                    canvasConfig.optionType
+                ]
+            }"
+        ></canvas>
 
         <ToolBar
             v-model:strokeColor="canvasConfig.strokeColor"
             v-model:optionType="canvasConfig.optionType"
             v-model:lineWidth="canvasConfig.lineWidth"
         />
-	</div>
+    </div>
 </template>
 
 <script setup lang="ts">
 import { ref, nextTick, reactive } from "vue";
-import ToolBar from "./components/toolbar.vue";
+import ToolBar from "./components/Toolbar.vue";
 import useHandlePointer from "./hooks/useHandlePointer";
 import useRenderElement from "./hooks/useRenderElement";
 import { IElement, ICanvasConfig } from "./types";
 import { OPTION_TYPE } from "./config";
-import { throttle } from "./utils";
+import { throttle } from "lodash";
 const canvasScale = window.devicePixelRatio;
 
 const whiteboard = ref<HTMLDivElement | null>(null);
@@ -54,7 +56,12 @@ const canTouch = "ontouchstart" in (window as any);
 
 // 绘制元素集合
 const elements = ref<IElement[]>([]);
-const { handleDown, handleMove, handleUp } = useHandlePointer(canvas, context, elements, canvasConfig);
+const { handleDown, handleMove, handleUp } = useHandlePointer(
+    canvas,
+    context,
+    elements,
+    canvasConfig
+);
 const { renderElements } = useRenderElement(canvas, context, canvasConfig);
 
 nextTick(() => {
@@ -82,7 +89,9 @@ nextTick(() => {
         context.value.scale(canvasScale, canvasScale);
         context.value.setTransform(1, 0, 0, 1, 0, 0);
         context.value.save();
-        elements.value = JSON.parse(localStorage.getItem("STORE_ELEMENTS") || "[]");
+        elements.value = JSON.parse(
+            localStorage.getItem("STORE_ELEMENTS") || "[]"
+        );
         console.log(elements.value);
         nextTick(() => {
             renderElements(elements.value);
@@ -93,14 +102,43 @@ nextTick(() => {
 });
 </script>
 
-<style scoped>
+<style>
 .white-board {
-	width: 100%;
-	height: 100%;
-	overflow: hidden;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
     position: relative;
     color: #333;
-    font-family: system-ui, BlinkMacSystemFont, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    font-family: system-ui, BlinkMacSystemFont, -apple-system, Segoe UI, Roboto,
+        Helvetica, Arial, sans-serif;
     user-select: none;
+}
+
+@keyframes zoomIn {
+    0% {
+        opacity: 0;
+        -webkit-transform: scale3d(0.3, 0.3, 0.3);
+        transform: scale3d(0.3, 0.3, 0.3);
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes zoomOut {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+        -webkit-transform: scale3d(0.3, 0.3, 0.3);
+        transform: scale3d(0.3, 0.3, 0.3);
+    }
+
+    to {
+        opacity: 0;
+    }
 }
 </style>
