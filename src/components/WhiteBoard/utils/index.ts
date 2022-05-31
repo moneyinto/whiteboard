@@ -183,13 +183,13 @@ function med(A: number[], B: number[]) {
 export const getPenSvgPath = (points: number[][], lineWidth: number) => {
     const options: StrokeOptions = {
         simulatePressure: true, // 是否基于速度模拟压力
-        size: lineWidth,
+        size: 4.25,
         thinning: 0.6,
         smoothing: 0.5,
         streamline: 0.5,
-        easing: (t) => Math.sin((t * Math.PI) / 2)
+        easing: (t) => Math.sin((t * Math.PI) / 2),
+        last: true
     };
-
     const storkePoints = getStroke(points, options);
     const max = storkePoints.length - 1;
     const svgPathData = storkePoints
@@ -202,7 +202,7 @@ export const getPenSvgPath = (points: number[][], lineWidth: number) => {
                 }
                 return acc;
             },
-            ["M", points[0], "Q"]
+            ["M", storkePoints[0], "Q"]
         )
         .join(" ")
         .replace(TO_FIXED_PRECISION, "$1");

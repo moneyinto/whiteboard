@@ -1,4 +1,4 @@
-import { Ref, watch } from "vue";
+import { Ref } from "vue";
 import { OPTION_TYPE } from "../config";
 import { ICanvasConfig, IElement, IPoint } from "../types";
 import { getCanvasPointPosition, getWhiteBoardPointPosition, throttleRAF } from "../utils";
