@@ -20,6 +20,7 @@
             v-model:lineWidth="canvasConfig.lineWidth"
             v-model:zoom="canvasConfig.zoom"
             @zoomChange="zoomChange"
+            @clear="clearElements"
         />
     </div>
 </template>
@@ -30,6 +31,7 @@ import ToolBar from "./components/Toolbar.vue";
 import useHandlePointer from "./hooks/useHandlePointer";
 import useRenderElement from "./hooks/useRenderElement";
 import useZoom from "./hooks/useZoom";
+import useClearElement from "./hooks/useClearElement";
 import { IElement, ICanvasConfig } from "./types";
 import { OPTION_TYPE } from "./config";
 import { throttle } from "lodash";
@@ -69,6 +71,7 @@ const { handleDown, handleMove, handleUp } = useHandlePointer(
 );
 const { renderElements } = useRenderElement(canvas, context, canvasConfig);
 const { updateScroll, handleWeel } = useZoom(canvas, canvasConfig);
+const { clearElements } = useClearElement(canvas, context, elements, canvasConfig);
 
 // 进行缩放
 const zoomChange = (newZoom, oldZoom) => {

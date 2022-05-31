@@ -183,7 +183,7 @@ function med(A: number[], B: number[]) {
 export const getPenSvgPath = (points: number[][], lineWidth: number) => {
     const options: StrokeOptions = {
         simulatePressure: true, // 是否基于速度模拟压力
-        size: 4.25,
+        size: lineWidth,
         thinning: 0.6,
         smoothing: 0.5,
         streamline: 0.5,

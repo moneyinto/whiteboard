@@ -24,6 +24,12 @@
             >
                 <Pen />
             </div>
+            <div
+                class="wb-tool-btn clear-btn"
+                @click="selectedMode(OPTION_TYPE.CLEAR)"
+            >
+                <Clear />
+            </div>
         </div>
 
         <div class="wb-setting">
@@ -63,9 +69,10 @@ import Mouse from "../icons/Mouse.vue";
 import Pen from "../icons/Pen.vue";
 import Setting from "../icons/Setting.vue";
 import Step from "./Step.vue";
+import Clear from "../icons/Clear.vue";
 import ColorPicker from "./ColorPicker/index.vue";
 
-const emit = defineEmits(["update:optionType", "update:lineWidth", "update:strokeColor", "update:zoom", "zoomChange"]);
+const emit = defineEmits(["update:optionType", "update:lineWidth", "update:strokeColor", "update:zoom", "zoomChange", "clear"]);
 
 const props = defineProps({
     optionType: {
@@ -94,6 +101,9 @@ const { optionType, strokeColor, lineWidth, zoom } = toRefs(props);
 const settingShow = ref(true);
 
 const selectedMode = (type: string) => {
+    if (type === OPTION_TYPE.CLEAR) {
+        return emit("clear");
+    }
     emit("update:optionType", type);
 };
 
@@ -143,7 +153,7 @@ const input = (value: number) => {
     align-items: center;
 }
 
-.wb-tool {
+.wb-tool, .wb-control {
     border-radius: 5px;
     box-shadow: 0 0 0 1px rgb(0 0 0 / 1%), 1px 1px 5px rgb(0 0 0 / 15%);
     background-color: rgba(255, 255, 255, 0.96);
@@ -170,6 +180,10 @@ const input = (value: number) => {
 
 .wb-tool svg {
     height: 15px;
+}
+
+.clear-btn svg {
+    height: 22px;
 }
 
 .wb-tool-btn.active svg {
