@@ -28,6 +28,7 @@ export const getCanvasPointPosition = (
 ) => {
     const x = (event instanceof TouchEvent) ? event.targetTouches[0].clientX : event.clientX;
     const y = (event instanceof TouchEvent) ? event.targetTouches[0].clientY : event.clientY;
+    console.log(x, y, canvasConfig.zoom);
     return {
         x: (x - canvasConfig.offsetX) / canvasConfig.zoom - canvasConfig.scrollX,
         y: (y - canvasConfig.offsetY) / canvasConfig.zoom - canvasConfig.scrollY
@@ -52,6 +53,33 @@ export const getCanvasPointPosition = (
         y:
             (y - canvasConfig.offsetY) / canvasConfig.zoom
     };
+};
+
+/**
+ * 获取缩放后对应点的scroll
+ * @param x 
+ * @param y 
+ * @param canvasConfig 
+ * @param newZoom 
+ * @param oldZoom 
+ * @returns 
+ */
+export const getZoomScroll = (x: number, y: number, canvasConfig: ICanvasConfig, newZoom: number, oldZoom: number) => {
+    const clientX = x - canvasConfig.offsetX;
+    const clientY = y - canvasConfig.offsetY;
+
+    // get original scroll position without zoom
+    const baseScrollX = canvasConfig.scrollX + (clientX - clientX / oldZoom);
+    const baseScrollY = canvasConfig.scrollY + (clientY - clientY / oldZoom);
+
+    // get scroll offsets for target zoom level
+    const zoomOffsetScrollX = -(clientX - clientX / newZoom);
+    const zoomOffsetScrollY = -(clientY - clientY / newZoom);
+
+    return {
+        scrollX: baseScrollX + zoomOffsetScrollX,
+        scrollY: baseScrollY +  zoomOffsetScrollY
+    }
 };
 
 export const getBoundsCoordsFromPoints = (points: IPoint[]): IBoundsCoords => {

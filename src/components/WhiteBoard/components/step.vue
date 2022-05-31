@@ -3,7 +3,8 @@
         <div class="wb-step-btn" @click="reduce()">
             <Reduce />
         </div>
-        <input :value="inputValue" type="number" min="1" @input="event => stepValueInput(event as InputEvent)" class="wb-step-value" />
+        <input v-if="!disabled" :value="inputValue" type="number" min="1" @input="event => stepValueInput(event)" class="wb-step-value" />
+        <div v-else class="web-step-value-readonly">{{ inputValue }}</div>
         <div class="wb-step-btn" @click="add()">
             <Plus />
         </div>
@@ -18,10 +19,14 @@ const props = defineProps({
     inputValue: {
         type: [String, Number],
         default: 0
+    },
+    disabled: {
+        type: Boolean,
+        default: false
     }
 });
 
-const { inputValue } = toRefs(props);
+const { inputValue, disabled } = toRefs(props);
 
 const emit = defineEmits(["reduce", "add", "input"]);
 
@@ -67,6 +72,15 @@ const stepValueInput = (event: InputEvent) => {
     outline: none;
     -moz-appearance: textfield;
 }
+
+.web-step-value-readonly {
+    margin: 0 5px;
+    min-width: 40px;
+    text-align: center;
+    font-size: 14px;
+    line-height: 30px;
+}
+
 .wb-step-value::-webkit-outer-spin-button,
 .wb-step-value::-webkit-inner-spin-button {
   -webkit-appearance: none;

@@ -1,6 +1,13 @@
 <template>
     <div class="wb-toolbar">
-        <div class="wb-control"></div>
+        <div class="wb-control">
+            <Step
+                disabled
+                :inputValue="(Math.round(zoom * 100)) + '%'"
+                @reduce="reduce('zoom')"
+                @add="add('zoom')"
+            />
+        </div>
 
         <div class="wb-tool">
             <div
@@ -26,7 +33,7 @@
                     <div class="wb-setting-value">
                         <ColorPicker
                             :inputValue="strokeColor"
-                            @update="(color: string) => selectedColor(color)"
+                            @update="color => selectedColor(color)"
                         />
                     </div>
                 </div>
@@ -35,9 +42,9 @@
                     <div class="wb-setting-value">
                         <Step
                             :inputValue="lineWidth"
-                            @reduce="reduce"
-                            @add="add"
-                            @input="input"
+                            @reduce="reduce('lineWidth')"
+                            @add="add('lineWidth')"
+                            @input="value => input(value, 'lineWidth')"
                         />
                     </div>
                 </div>
@@ -50,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineEmits, defineProps, ref, toRefs } from "vue";
+import { defineEmits, defineProps, ref, toRefs, watch } from "vue";
 import { OPTION_TYPE } from "../config";
 import Mouse from "../icons/Mouse.vue";
 import Pen from "../icons/Pen.vue";
@@ -58,7 +65,7 @@ import Setting from "../icons/Setting.vue";
 import Step from "./Step.vue";
 import ColorPicker from "./ColorPicker/index.vue";
 
-const emit = defineEmits(["update:optionType", "update:lineWidth", "update:strokeColor"]);
+const emit = defineEmits(["update:optionType", "update:lineWidth", "update:strokeColor", "update:zoom", "zoomChange"]);
 
 const props = defineProps({
     optionType: {
@@ -74,10 +81,15 @@ const props = defineProps({
     strokeColor: {
         type: String,
         required: true
+    },
+
+    zoom: {
+        type: Number,
+        required: true
     }
 });
 
-const { optionType, strokeColor, lineWidth } = toRefs(props);
+const { optionType, strokeColor, lineWidth, zoom } = toRefs(props);
 
 const settingShow = ref(true);
 
@@ -89,12 +101,27 @@ const selectedColor = (color: string) => {
     emit("update:strokeColor", color);
 };
 
-const reduce = () => {
+const reduce = (type: string) => {
+    if (type === "zoom") {
+        if (zoom.value === 0.1) return;
+        const oldZoom = zoom.value;
+        const newZoom = Number((oldZoom - 0.05 < 0.1 ? 0.1 : oldZoom - 0.05).toFixed(2));
+        emit("update:zoom", newZoom);
+        emit("zoomChange", newZoom, oldZoom);
+        return;
+    }
     if (lineWidth.value === 1) return;
     emit("update:lineWidth", lineWidth.value === 5 ? 1 : lineWidth.value - 5);
 };
 
-const add = () => {
+const add = (type: string) => {
+    if (type === "zoom") {
+        const oldZoom = zoom.value;
+        const newZoom = Number((zoom.value + 0.05).toFixed(2));
+        emit("update:zoom", newZoom);
+        emit("zoomChange", newZoom, oldZoom);
+        return;
+    }
     emit("update:lineWidth", lineWidth.value === 1 ? 5 : lineWidth.value + 5);
 };
 

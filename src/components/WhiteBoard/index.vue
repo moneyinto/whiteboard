@@ -4,6 +4,7 @@
             ref="canvas"
             :width="canvasWidth"
             :height="canvasHeighth"
+            @mousewheel="wheelScaleCanvas"
             :style="{
                 width: canvasDomWidth,
                 height: canvasDomHeight,
@@ -17,18 +18,22 @@
             v-model:strokeColor="canvasConfig.strokeColor"
             v-model:optionType="canvasConfig.optionType"
             v-model:lineWidth="canvasConfig.lineWidth"
+            v-model:zoom="canvasConfig.zoom"
+            @zoomChange="zoomChange"
         />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, reactive } from "vue";
+import { ref, nextTick, reactive, watch } from "vue";
 import ToolBar from "./components/Toolbar.vue";
 import useHandlePointer from "./hooks/useHandlePointer";
 import useRenderElement from "./hooks/useRenderElement";
+import useZoom from "./hooks/useZoom";
 import { IElement, ICanvasConfig } from "./types";
 import { OPTION_TYPE } from "./config";
 import { throttle } from "lodash";
+import { getCanvasPointPosition, getWhiteBoardPointPosition } from "./utils";
 const canvasScale = window.devicePixelRatio;
 
 const whiteboard = ref<HTMLDivElement | null>(null);
@@ -63,6 +68,20 @@ const { handleDown, handleMove, handleUp } = useHandlePointer(
     canvasConfig
 );
 const { renderElements } = useRenderElement(canvas, context, canvasConfig);
+const { updateScroll, handleWeel } = useZoom(canvas, canvasConfig);
+
+// 进行缩放
+const zoomChange = (newZoom, oldZoom) => {
+    updateScroll(newZoom, oldZoom, canvas.value!.width / 2, canvas.value!.height / 2);
+    renderElements(elements.value);
+};
+
+const wheelScaleCanvas = throttle((event: WheelEvent) => {
+    if (event.metaKey || event.ctrlKey) {
+        handleWeel(event.pageX, event.pageY, event.deltaY);
+        renderElements(elements.value);
+    }
+}, 30);
 
 nextTick(() => {
     if (!canvas.value || !whiteboard.value) return;
