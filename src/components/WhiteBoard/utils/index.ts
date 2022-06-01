@@ -252,10 +252,9 @@ export const checkCrossElements = (
     y: number,
     elements: IElement[]
 ) => {
-    // const canCrossElements = elements.filter(element => {
-    //     getBoundsCoordsFromPoints(element.points);
-    //     return !()
-    // })
+    // ！！！！！！！！！！！！！！暂不考虑线条粗细的情况
+    // 交点的方式 当线条特别短时不是很灵敏！！！！！！！！！！！
+    // ！！！！！可以考虑点到点两点之间距离小于多少为一个判断的界限来判定 只要存在一点 与 橡皮点 的直线值小于 min 则认为橡皮擦除到改元素
     for (const element of elements) {
         const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(
             element.points
@@ -268,10 +267,15 @@ export const checkCrossElements = (
                     element.y + maxY < Math.min(startPonit[1], y))
             ) && !element.isDelete
         ) {
-            // 暂不考虑点的情况 也就是points length为2的情况
-            // ！！！！！！！！！！！！！！暂不考虑线条粗细的情况
-            // 存在交点的情况 进行进一步判断
-            // 通过向量的叉乘进行判断 (！！！！！可以考虑点到点两点之间距离小于多少为一个判断的界限来判定 只要存在一点 与 橡皮点 的直线值小于 min 则认为橡皮擦除到改元素)
+            // 元素为一个点的情况 或者元素比较小，点都都集中在某个小范围内
+            // 进一步优化交点方法不灵敏问题
+            if (maxX - minX < 5 && maxY - minY < 5 || element.points.length === 2) {
+                const r = Math.hypot(x - element.x, y - element.y);
+                if (r < 5) return element.isDelete = true;
+            }
+
+            // 下面对存在交点的情况 进行进一步判断
+            // 通过向量的叉乘进行判断
             // 向量a×向量b（×为向量叉乘），若结果小于0，表示向量b在向量a的顺时针方向；若结果大于0，表示向量b在向量a的逆时针方向；若等于0，表示向量a与向量b平行
             // 假设有两条线段AB，CD，若AB，CD相交
             // 线段AB与CD所在的直线相交，即点A和点B分别在直线CD的两边
