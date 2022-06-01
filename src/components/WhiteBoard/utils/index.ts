@@ -1,4 +1,5 @@
 import getStroke, { StrokeOptions } from "perfect-freehand";
+import { OPTION_TYPE } from "../config";
 import { IBoundsCoords, ICanvasConfig, IElement, IPoint } from "../types";
 
 /**
@@ -26,11 +27,18 @@ export const getCanvasPointPosition = (
     event: PointerEvent | TouchEvent,
     canvasConfig: ICanvasConfig
 ) => {
-    const x = (event instanceof TouchEvent) ? event.targetTouches[0].clientX : event.clientX;
-    const y = (event instanceof TouchEvent) ? event.targetTouches[0].clientY : event.clientY;
-    console.log(x, y, canvasConfig.zoom);
+    const x =
+        event instanceof TouchEvent
+            ? event.targetTouches[0].clientX
+            : event.clientX;
+    const y =
+        event instanceof TouchEvent
+            ? event.targetTouches[0].clientY
+            : event.clientY;
     return {
-        x: (x - canvasConfig.offsetX) / canvasConfig.zoom - canvasConfig.scrollX,
+        x:
+            (x - canvasConfig.offsetX) / canvasConfig.zoom -
+            canvasConfig.scrollX,
         y: (y - canvasConfig.offsetY) / canvasConfig.zoom - canvasConfig.scrollY
     };
 };
@@ -41,30 +49,40 @@ export const getCanvasPointPosition = (
  * @param canvasConfig
  * @returns
  */
- export const getWhiteBoardPointPosition = (
+export const getWhiteBoardPointPosition = (
     event: PointerEvent | TouchEvent,
     canvasConfig: ICanvasConfig
 ) => {
-    const x = (event instanceof TouchEvent) ? event.targetTouches[0].clientX : event.clientX;
-    const y = (event instanceof TouchEvent) ? event.targetTouches[0].clientY : event.clientY;
+    const x =
+        event instanceof TouchEvent
+            ? event.targetTouches[0].clientX
+            : event.clientX;
+    const y =
+        event instanceof TouchEvent
+            ? event.targetTouches[0].clientY
+            : event.clientY;
     return {
-        x:
-            (x - canvasConfig.offsetX) / canvasConfig.zoom,
-        y:
-            (y - canvasConfig.offsetY) / canvasConfig.zoom
+        x: (x - canvasConfig.offsetX) / canvasConfig.zoom,
+        y: (y - canvasConfig.offsetY) / canvasConfig.zoom
     };
 };
 
 /**
  * 获取缩放后对应点的scroll
- * @param x 
- * @param y 
- * @param canvasConfig 
- * @param newZoom 
- * @param oldZoom 
- * @returns 
+ * @param x
+ * @param y
+ * @param canvasConfig
+ * @param newZoom
+ * @param oldZoom
+ * @returns
  */
-export const getZoomScroll = (x: number, y: number, canvasConfig: ICanvasConfig, newZoom: number, oldZoom: number) => {
+export const getZoomScroll = (
+    x: number,
+    y: number,
+    canvasConfig: ICanvasConfig,
+    newZoom: number,
+    oldZoom: number
+) => {
     const clientX = x - canvasConfig.offsetX;
     const clientY = y - canvasConfig.offsetY;
 
@@ -78,8 +96,8 @@ export const getZoomScroll = (x: number, y: number, canvasConfig: ICanvasConfig,
 
     return {
         scrollX: baseScrollX + zoomOffsetScrollX,
-        scrollY: baseScrollY +  zoomOffsetScrollY
-    }
+        scrollY: baseScrollY + zoomOffsetScrollY
+    };
 };
 
 export const getBoundsCoordsFromPoints = (points: IPoint[]): IBoundsCoords => {
@@ -103,7 +121,7 @@ export const getBoundsCoordsFromPoints = (points: IPoint[]): IBoundsCoords => {
  * @param element
  */
 export const getElementBoundsCoords = (element: IElement): IBoundsCoords => {
-    if (element.type === "pen") {
+    if (element.type === OPTION_TYPE.PEN) {
         const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(
             element.points
         );
@@ -208,4 +226,80 @@ export const getPenSvgPath = (points: number[][], lineWidth: number) => {
         .replace(TO_FIXED_PRECISION, "$1");
     const path = new Path2D(svgPathData);
     return path;
+};
+
+/**
+ * 向量叉乘
+ * @param v1 
+ * @param v2 
+ * @returns 
+ */
+export const crossMul = (v1: IPoint, v2: IPoint) => {
+    return v1[0] * v2[1] - v1[1] * v2[0];
+}
+
+/**
+ * 获取存在交叉的元素
+ * @param startPonit
+ * @param x
+ * @param y
+ * @param elements
+ * @param canvasConfig
+ */
+export const checkCrossElements = (
+    startPonit: IPoint,
+    x: number,
+    y: number,
+    elements: IElement[]
+) => {
+    // const canCrossElements = elements.filter(element => {
+    //     getBoundsCoordsFromPoints(element.points);
+    //     return !()
+    // })
+    for (const element of elements) {
+        const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(
+            element.points
+        );
+        if (
+            !(
+                (element.x + minX > Math.max(startPonit[0], x) &&
+                    element.y + minY > Math.max(startPonit[1], y)) ||
+                (element.x + maxX < Math.min(startPonit[0], x) &&
+                    element.y + maxY < Math.min(startPonit[1], y))
+            ) && !element.isDelete
+        ) {
+            // 暂不考虑点的情况 也就是points length为2的情况
+            // ！！！！！！！！！！！！！！暂不考虑线条粗细的情况
+            // 存在交点的情况 进行进一步判断
+            // 通过向量的叉乘进行判断 (！！！！！可以考虑点到点两点之间距离小于多少为一个判断的界限来判定 只要存在一点 与 橡皮点 的直线值小于 min 则认为橡皮擦除到改元素)
+            // 向量a×向量b（×为向量叉乘），若结果小于0，表示向量b在向量a的顺时针方向；若结果大于0，表示向量b在向量a的逆时针方向；若等于0，表示向量a与向量b平行
+            // 假设有两条线段AB，CD，若AB，CD相交
+            // 线段AB与CD所在的直线相交，即点A和点B分别在直线CD的两边
+            // 线段CD与AB所在的直线相交，即点C和点D分别在直线AB的两边
+            // 两个条件同时满足是两线段相交的充要条件，所以我们只需要证明点A和点B分别在直线CD的两边，点C和点D分别在直线AB的两边，这样便可以证明线段AB与CD相交
+            for (let i = 0; i < element.points.length - 1; i++) {
+                const A = [element.points[i][0] + element.x, element.points[i][1] + element.y];
+                const B = [element.points[i + 1][0] + element.x, element.points[i + 1][1] + element.y];
+                const C = startPonit;
+                const D = [x, y];
+                // 以A为起点 向量AC AB AD -> 证明 C D 点 在AB两边
+                // 向量AB AC AD
+                const AB = [B[0] - A[0], B[1] - A[1]];
+                const AC = [C[0] - A[0], C[1] - A[1]];
+                const AD = [D[0] - A[0], D[1] - A[1]];
+
+                // 以C为起点 向量 CD CA CB -> 证明 A B 点 在CD两边
+                // 向量 CD CA CB
+                const CA = [A[0] - C[0], A[1] - C[1]];
+                const CB = [B[0] - C[0], B[1] - C[1]];
+                const CD = [D[0] - C[0], D[1] - C[1]];
+                
+                // 向量叉乘 一正一负 证明则成立
+                if (Math.sign(crossMul(AC, AB) * crossMul(AD, AB)) === -1 && Math.sign(crossMul(CA, CD) * crossMul(CB, CD)) === -1) {
+                    element.isDelete = true;
+                    break;
+                }
+            }
+        }
+    }
 };

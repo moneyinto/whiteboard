@@ -1,4 +1,5 @@
 import { Ref } from "vue";
+import { OPTION_TYPE } from "../config";
 import { ICanvasConfig, IElement } from "../types";
 import { createRandomCode } from "../utils";
 
@@ -11,7 +12,7 @@ export default (elements: Ref<IElement[]>, canvasConfig: ICanvasConfig) => {
     const createPenElement = ({ x, y }: { x: number; y: number }) => {
         return createElement({
             id: createRandomCode(),
-            type: "pen",
+            type: OPTION_TYPE.PEN,
             width: 0,
             height: 0,
             x,

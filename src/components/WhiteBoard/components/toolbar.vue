@@ -25,6 +25,13 @@
                 <Pen />
             </div>
             <div
+                class="wb-tool-btn eraser-btn"
+                :class="optionType === OPTION_TYPE.ERASER && 'active'"
+                @click="selectedMode(OPTION_TYPE.ERASER)"
+            >
+                <Eraser />
+            </div>
+            <div
                 class="wb-tool-btn clear-btn"
                 @click="selectedMode(OPTION_TYPE.CLEAR)"
             >
@@ -71,6 +78,7 @@ import Setting from "../icons/Setting.vue";
 import Step from "./Step.vue";
 import Clear from "../icons/Clear.vue";
 import ColorPicker from "./ColorPicker/index.vue";
+import Eraser from "../icons/Eraser.vue";
 
 const emit = defineEmits(["update:optionType", "update:lineWidth", "update:strokeColor", "update:zoom", "zoomChange", "clear"]);
 
@@ -182,7 +190,7 @@ const input = (value: number) => {
     height: 15px;
 }
 
-.clear-btn svg {
+.eraser-btn svg, .clear-btn svg {
     height: 22px;
 }
 

@@ -1,4 +1,5 @@
 import { Ref } from "vue";
+import { OPTION_TYPE } from "../config";
 import { ICanvasConfig, IElement, IPenElement } from "../types";
 import { getElementBoundsCoords, getPenSvgPath } from "../utils";
 
@@ -7,7 +8,6 @@ export default (canvas: Ref<HTMLCanvasElement | null>, context: Ref<CanvasRender
     const renderPenElement = (element: IPenElement) => {
         // 点少于两个时不进行绘制
         if (element.points.length < 2 || !context.value) return;
-
         const [x1, y1, x2, y2] = getElementBoundsCoords(element);
 
         // cx, cy 最小矩形中心点在canvas中的位置
@@ -51,10 +51,12 @@ export default (canvas: Ref<HTMLCanvasElement | null>, context: Ref<CanvasRender
         context.value.clearRect(0, 0, canvas.value.width, canvas.value.height);
         // 绘制canvas
         elements.forEach(element => {
-            switch(element.type) {
-                case "pen":
-                    renderPenElement(element);
-                    break;
+            if (!element.isDelete) {
+                switch(element.type) {
+                    case OPTION_TYPE.PEN:
+                        renderPenElement(element);
+                        break;
+                }
             }
         });
     };

@@ -17,7 +17,7 @@
  */
 interface IBaseElement {
     id: string;
-    type: "pen";
+    type: "PEN";
     angle: number;
     isDelete: boolean;
     locked: boolean;
