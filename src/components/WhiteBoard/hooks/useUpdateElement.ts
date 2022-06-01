@@ -6,8 +6,6 @@ export default (elements: Ref<IElement[]>) => {
         for (const key in props) {
             (element as any)[key] = (props as any)[key];
         }
-
-        localStorage.setItem("STORE_ELEMENTS", JSON.stringify(elements.value));
     };
 
     return {

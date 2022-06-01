@@ -24,6 +24,19 @@ export default (
     let targetElement: IElement | null = null;
     let startPoint: IPoint | null = null;
 
+    const canvasMove = (event: PointerEvent | TouchEvent) => {
+        if (startPoint) {
+            const { x, y } = getWhiteBoardPointPosition(
+                event,
+                canvasConfig
+            );
+            canvasConfig.scrollX += x - startPoint[0];
+            canvasConfig.scrollY += y - startPoint[1];
+            startPoint = [x, y];
+            renderElements(elements.value);
+        }
+    };
+
     const handleDown = (event: PointerEvent | TouchEvent) => {
         switch (canvasConfig.optionType) {
             case OPTION_TYPE.MOUSE: {
@@ -50,16 +63,7 @@ export default (
     const handleMove = throttleRAF((event: PointerEvent | TouchEvent) => {
         switch (canvasConfig.optionType) {
             case OPTION_TYPE.MOUSE: {
-                if (startPoint) {
-                    const { x, y } = getWhiteBoardPointPosition(
-                        event,
-                        canvasConfig
-                    );
-                    canvasConfig.scrollX += x - startPoint[0];
-                    canvasConfig.scrollY += y - startPoint[1];
-                    startPoint = [x, y];
-                    renderElements(elements.value);
-                }
+                canvasMove(event);
                 break;
             }
             case OPTION_TYPE.PEN: {
@@ -103,38 +107,50 @@ export default (
     };
 
     const handleUp = (event: PointerEvent | TouchEvent) => {
-        if (targetElement) {
-            switch (canvasConfig.optionType) {
-                case OPTION_TYPE.PEN: {
-                    const points = targetElement.points;
-                    if (points.length === 1) {
-                        updateElement(targetElement, {
-                            points: [...points, [0.0001, 0.0001]]
-                        });
-                    } else {
-                        const { x, y } = getCanvasPointPosition(
-                            event,
-                            canvasConfig
-                        );
-                        updateElement(targetElement, {
-                            points: [
-                                ...points,
-                                [x - targetElement.x, y - targetElement.y]
-                            ]
-                        });
-                    }
-                    // 更新一下元素width和height 暂时没有考虑旋转角度
-                    const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(
-                        targetElement.points
+        switch (canvasConfig.optionType) {
+            case OPTION_TYPE.MOUSE: {
+                canvasMove(event);
+                break;
+            }
+            case OPTION_TYPE.PEN: {
+                if (!targetElement) return;
+                const points = targetElement.points;
+                if (points.length === 1) {
+                    updateElement(targetElement, {
+                        points: [...points, [0.0001, 0.0001]]
+                    });
+                } else {
+                    const { x, y } = getCanvasPointPosition(
+                        event,
+                        canvasConfig
                     );
                     updateElement(targetElement, {
-                        width: maxX - minX,
-                        height: maxY - minY
+                        points: [
+                            ...points,
+                            [x - targetElement.x, y - targetElement.y]
+                        ]
                     });
-                    break;
                 }
+                // 更新一下元素width和height 暂时没有考虑旋转角度
+                const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(
+                    targetElement.points
+                );
+                updateElement(targetElement, {
+                    width: maxX - minX,
+                    height: maxY - minY
+                });
+                localStorage.setItem("STORE_ELEMENTS", JSON.stringify(elements.value));
+                renderElements(elements.value);
+                break;
             }
-            renderElements(elements.value);
+            case OPTION_TYPE.ERASER: {
+                // 橡皮擦模式在结束时过滤掉删除的元素
+                elements.value = elements.value.filter(element => !element.isDelete);
+                console.log(elements.value);
+                localStorage.setItem("STORE_ELEMENTS", JSON.stringify(elements.value));
+                renderElements(elements.value);
+                break;
+            }
         }
         targetElement = null;
         startPoint = null;
