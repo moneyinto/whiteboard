@@ -230,13 +230,13 @@ export const getPenSvgPath = (points: number[][], lineWidth: number) => {
 
 /**
  * 向量叉乘
- * @param v1 
- * @param v2 
- * @returns 
+ * @param v1
+ * @param v2
+ * @returns
  */
 export const crossMul = (v1: IPoint, v2: IPoint) => {
     return v1[0] * v2[1] - v1[1] * v2[0];
-}
+};
 
 /**
  * 获取存在交叉的元素
@@ -265,13 +265,17 @@ export const checkCrossElements = (
                     element.y + minY > Math.max(startPonit[1], y)) ||
                 (element.x + maxX < Math.min(startPonit[0], x) &&
                     element.y + maxY < Math.min(startPonit[1], y))
-            ) && !element.isDelete
+            ) &&
+            !element.isDelete
         ) {
             // 元素为一个点的情况 或者元素比较小，点都都集中在某个小范围内
             // 进一步优化交点方法不灵敏问题
-            if (maxX - minX < 5 && maxY - minY < 5 || element.points.length === 2) {
+            if (
+                (maxX - minX < 5 && maxY - minY < 5) ||
+                element.points.length === 2
+            ) {
                 const r = Math.hypot(x - element.x, y - element.y);
-                if (r < 5) return element.isDelete = true;
+                if (r < 5) return (element.isDelete = true);
             }
 
             // 下面对存在交点的情况 进行进一步判断
@@ -282,8 +286,14 @@ export const checkCrossElements = (
             // 线段CD与AB所在的直线相交，即点C和点D分别在直线AB的两边
             // 两个条件同时满足是两线段相交的充要条件，所以我们只需要证明点A和点B分别在直线CD的两边，点C和点D分别在直线AB的两边，这样便可以证明线段AB与CD相交
             for (let i = 0; i < element.points.length - 1; i++) {
-                const A = [element.points[i][0] + element.x, element.points[i][1] + element.y];
-                const B = [element.points[i + 1][0] + element.x, element.points[i + 1][1] + element.y];
+                const A = [
+                    element.points[i][0] + element.x,
+                    element.points[i][1] + element.y
+                ];
+                const B = [
+                    element.points[i + 1][0] + element.x,
+                    element.points[i + 1][1] + element.y
+                ];
                 const C = startPonit;
                 const D = [x, y];
                 // 以A为起点 向量AC AB AD -> 证明 C D 点 在AB两边
@@ -297,13 +307,71 @@ export const checkCrossElements = (
                 const CA = [A[0] - C[0], A[1] - C[1]];
                 const CB = [B[0] - C[0], B[1] - C[1]];
                 const CD = [D[0] - C[0], D[1] - C[1]];
-                
+
                 // 向量叉乘 一正一负 证明则成立
-                if (Math.sign(crossMul(AC, AB) * crossMul(AD, AB)) === -1 && Math.sign(crossMul(CA, CD) * crossMul(CB, CD)) === -1) {
+                if (
+                    Math.sign(crossMul(AC, AB) * crossMul(AD, AB)) === -1 &&
+                    Math.sign(crossMul(CA, CD) * crossMul(CB, CD)) === -1
+                ) {
                     element.isDelete = true;
                     break;
                 }
             }
         }
     }
+};
+
+/**
+ * 过滤获取可视区域内的元素
+ * @param elements
+ * @param scrollX
+ * @param scrollY
+ * @param normalizedCanvasWidth
+ * @param normalizedCanvasHeight
+ * @returns
+ */
+export const getVisibleElements = (
+    elements: IElement[],
+    scrollX: number,
+    scrollY: number,
+    normalizedCanvasWidth: number,
+    normalizedCanvasHeight: number
+) => {
+    const [viewMinX, viewMinY, viewMaxX, viewMaxY] = getViewCanvasBoundsCoords(
+        scrollX,
+        scrollY,
+        normalizedCanvasWidth,
+        normalizedCanvasHeight
+    );
+    return elements.filter((element) => {
+        const [minX, minY, maxX, maxY] = getElementBoundsCoords(element);
+        return (
+            maxX > viewMinX &&
+            maxY > viewMinY &&
+            minX < viewMaxX &&
+            minY < viewMaxY
+        );
+    });
+};
+
+/**
+ * 获取可视区域最小坐标和最大坐标
+ * @param scrollX
+ * @param scrollY
+ * @param normalizedCanvasWidth
+ * @param normalizedCanvasHeight
+ * @returns
+ */
+export const getViewCanvasBoundsCoords = (
+    scrollX: number,
+    scrollY: number,
+    normalizedCanvasWidth: number,
+    normalizedCanvasHeight: number
+) => {
+    return [
+        0 - scrollX,
+        0 - scrollY,
+        normalizedCanvasWidth - scrollX,
+        normalizedCanvasHeight - scrollY
+    ];
 };

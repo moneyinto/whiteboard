@@ -4,7 +4,7 @@
 			ref="canvas"
 			:width="canvasWidth"
 			:height="canvasHeighth"
-			@mousewheel="wheelScaleCanvas"
+			@mousewheel.prevent="wheelScaleCanvas"
 			:style="{
 				width: canvasDomWidth,
 				height: canvasDomHeight,
@@ -37,7 +37,6 @@ import useClearElement from "./hooks/useClearElement";
 import { IElement, ICanvasConfig } from "./types";
 import { OPTION_TYPE } from "./config";
 import { throttle } from "lodash";
-import { getCanvasPointPosition, getWhiteBoardPointPosition } from "./utils";
 const canvasScale = window.devicePixelRatio;
 
 const whiteboard = ref<HTMLDivElement | null>(null);
@@ -81,7 +80,7 @@ const { clearElements } = useClearElement(
 );
 
 // 进行缩放
-const zoomChange = (newZoom, oldZoom) => {
+const zoomChange = (newZoom: number, oldZoom: number) => {
 	updateScroll(
 		newZoom,
 		oldZoom,

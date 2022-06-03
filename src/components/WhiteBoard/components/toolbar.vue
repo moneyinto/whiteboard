@@ -57,7 +57,7 @@
                             :inputValue="lineWidth"
                             @reduce="reduce('lineWidth')"
                             @add="add('lineWidth')"
-                            @input="value => input(value, 'lineWidth')"
+                            @input="value => input(value)"
                         />
                     </div>
                 </div>
