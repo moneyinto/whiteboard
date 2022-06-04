@@ -37,6 +37,8 @@ import useClearElement from "./hooks/useClearElement";
 import { IElement, ICanvasConfig } from "./types";
 import { OPTION_TYPE } from "./config";
 import { throttle } from "lodash";
+import db from "./utils/db";
+import useHistorySnapshot from "./hooks/useHistorySnapshot";
 const canvasScale = window.devicePixelRatio;
 
 const whiteboard = ref<HTMLDivElement | null>(null);
@@ -78,6 +80,7 @@ const { clearElements } = useClearElement(
 	elements,
 	canvasConfig
 );
+const { getHistorySnapshot } = useHistorySnapshot();
 
 // 进行缩放
 const zoomChange = (newZoom: number, oldZoom: number) => {
@@ -97,7 +100,8 @@ const wheelScaleCanvas = throttle((event: WheelEvent) => {
 	}
 }, 30);
 
-nextTick(() => {
+nextTick(async () => {
+    await db.init(); // 初始化数据库
 	if (!canvas.value || !whiteboard.value) return;
 	context.value = canvas.value.getContext("2d");
 
@@ -122,11 +126,14 @@ nextTick(() => {
 		context.value.scale(canvasScale, canvasScale);
 		context.value.setTransform(1, 0, 0, 1, 0, 0);
 		context.value.save();
-		elements.value = JSON.parse(
-			localStorage.getItem("STORE_ELEMENTS") || "[]"
-		);
+		// elements.value = JSON.parse(
+		// 	localStorage.getItem("STORE_ELEMENTS") || "[]"
+		// );
+
 		console.log(elements.value);
-		nextTick(() => {
+		nextTick(async () => {
+            const a = await getHistorySnapshot();
+            console.log(a);
 			renderElements(elements.value);
 		});
 	}, 100);

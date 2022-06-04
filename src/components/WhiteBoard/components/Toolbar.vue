@@ -7,6 +7,14 @@
                 @reduce="reduce('zoom')"
                 @add="add('zoom')"
             />
+
+            <div class="wb-tool-btn revoke" :class="!canRevoke && 'disabled'">
+                <Revoke />
+            </div>
+
+            <div class="wb-tool-btn recover" :class="!canRecover && 'disabled'">
+                <Revoke />
+            </div>
         </div>
 
         <div class="wb-tool">
@@ -79,6 +87,7 @@ import Step from "./Step.vue";
 import Clear from "../icons/Clear.vue";
 import ColorPicker from "./ColorPicker/index.vue";
 import Eraser from "../icons/Eraser.vue";
+import Revoke from "../icons/Revoke.vue";
 
 const emit = defineEmits(["update:optionType", "update:lineWidth", "update:strokeColor", "update:zoom", "zoomChange", "clear"]);
 
@@ -101,6 +110,16 @@ const props = defineProps({
     zoom: {
         type: Number,
         required: true
+    },
+
+    canRecover: {
+        type: Boolean,
+        default: false
+    },
+
+    canRevoke: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -284,5 +303,22 @@ const input = (value: number) => {
 
 .wb-setting-value {
     margin-top: 5px;
+}
+
+.revoke svg, .recover svg {
+    height: 22px;
+}
+
+.revoke.disabled svg, .recover.disabled svg {
+    fill: #888;
+}
+
+.revoke {
+    margin-left: 15px;
+}
+
+.recover {
+    transform-origin: center;
+    transform: rotateY(180deg);
 }
 </style>

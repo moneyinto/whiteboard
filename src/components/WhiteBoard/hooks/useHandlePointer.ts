@@ -9,6 +9,7 @@ import {
     throttleRAF
 } from "../utils";
 import useCreateElement from "./useCreateElement";
+import useHistorySnapshot from "./useHistorySnapshot";
 import useRenderElement from "./useRenderElement";
 import useUpdateElement from "./useUpdateElement";
 
@@ -19,8 +20,9 @@ export default (
     canvasConfig: ICanvasConfig
 ) => {
     const { createPenElement } = useCreateElement(elements, canvasConfig);
-    const { updateElement } = useUpdateElement(elements);
+    const { updateElement } = useUpdateElement();
     const { renderElements } = useRenderElement(canvas, context, canvasConfig);
+    const { addHistorySnapshot } = useHistorySnapshot();
     let targetElement: IElement | null = null;
     let startPoint: IPoint | null = null;
 
@@ -139,6 +141,7 @@ export default (
                     width: maxX - minX,
                     height: maxY - minY
                 });
+                addHistorySnapshot(elements.value);
                 localStorage.setItem("STORE_ELEMENTS", JSON.stringify(elements.value));
                 renderElements(elements.value);
                 break;
@@ -146,7 +149,7 @@ export default (
             case OPTION_TYPE.ERASER: {
                 // 橡皮擦模式在结束时过滤掉删除的元素
                 elements.value = elements.value.filter(element => !element.isDelete);
-                console.log(elements.value);
+                addHistorySnapshot(elements.value);
                 localStorage.setItem("STORE_ELEMENTS", JSON.stringify(elements.value));
                 renderElements(elements.value);
                 break;
