@@ -8,11 +8,11 @@
                 @add="add('zoom')"
             />
 
-            <div class="wb-tool-btn revoke" :class="!canRevoke && 'disabled'">
+            <div class="wb-tool-btn revoke" :class="snapshotCursor === -1 && 'disabled'" @click="undo()">
                 <Revoke />
             </div>
 
-            <div class="wb-tool-btn recover" :class="!canRecover && 'disabled'">
+            <div class="wb-tool-btn recover" :class="snapshotCursor === snapshotKeys.length - 1 && 'disabled'" @click="redo()">
                 <Revoke />
             </div>
         </div>
@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineEmits, defineProps, ref, toRefs, watch } from "vue";
+import { defineEmits, defineProps, PropType, ref, toRefs, watch } from "vue";
 import { OPTION_TYPE } from "../config";
 import Mouse from "../icons/Mouse.vue";
 import Pen from "../icons/Pen.vue";
@@ -88,8 +88,9 @@ import Clear from "../icons/Clear.vue";
 import ColorPicker from "./ColorPicker/index.vue";
 import Eraser from "../icons/Eraser.vue";
 import Revoke from "../icons/Revoke.vue";
+import useHistorySnapshot from "../hooks/useHistorySnapshot";
 
-const emit = defineEmits(["update:optionType", "update:lineWidth", "update:strokeColor", "update:zoom", "zoomChange", "clear"]);
+const emit = defineEmits(["update:optionType", "update:lineWidth", "update:strokeColor", "update:zoom", "zoomChange", "clear", "redo", "undo"]);
 
 const props = defineProps({
     optionType: {
@@ -112,20 +113,28 @@ const props = defineProps({
         required: true
     },
 
-    canRecover: {
-        type: Boolean,
-        default: false
+    snapshotCursor: {
+        type: Number,
+        required: true
     },
 
-    canRevoke: {
-        type: Boolean,
-        default: false
+    snapshotKeys: {
+        type: Array as PropType<number>,
+        required: true
     }
 });
 
 const { optionType, strokeColor, lineWidth, zoom } = toRefs(props);
 
 const settingShow = ref(true);
+
+const undo = () => {
+    emit("undo");
+};
+
+const redo = () => {
+    emit("redo");
+};
 
 const selectedMode = (type: string) => {
     if (type === OPTION_TYPE.CLEAR) {

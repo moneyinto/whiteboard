@@ -21,6 +21,10 @@
 			v-model:optionType="canvasConfig.optionType"
 			v-model:lineWidth="canvasConfig.lineWidth"
 			v-model:zoom="canvasConfig.zoom"
+			:snapshotCursor="snapshotCursor"
+			:snapshotKeys="snapshotKeys"
+			@undo="undo"
+			@redo="redo"
 			@zoomChange="zoomChange"
 			@clear="clearElements"
 		/>
@@ -48,6 +52,8 @@ const canvasWidth = ref(0 * canvasScale);
 const canvasHeighth = ref(0 * canvasScale);
 const canvasDomWidth = ref(0 + "px");
 const canvasDomHeight = ref(0 + "px");
+const snapshotCursor = ref(-1);
+const snapshotKeys = ref([]);
 
 // 画布配置
 const canvasConfig = reactive<ICanvasConfig>({
@@ -70,7 +76,9 @@ const { handleDown, handleMove, handleUp } = useHandlePointer(
 	canvas,
 	context,
 	elements,
-	canvasConfig
+	canvasConfig,
+	snapshotKeys,
+	snapshotCursor
 );
 const { renderElements } = useRenderElement(canvas, context, canvasConfig);
 const { updateScroll, handleWeel } = useZoom(canvas, canvasConfig);
@@ -80,7 +88,7 @@ const { clearElements } = useClearElement(
 	elements,
 	canvasConfig
 );
-const { getHistorySnapshot } = useHistorySnapshot();
+const { getHistorySnapshot, undo, redo } = useHistorySnapshot(elements, snapshotKeys, snapshotCursor, renderElements);
 
 // 进行缩放
 const zoomChange = (newZoom: number, oldZoom: number) => {
@@ -126,14 +134,9 @@ nextTick(async () => {
 		context.value.scale(canvasScale, canvasScale);
 		context.value.setTransform(1, 0, 0, 1, 0, 0);
 		context.value.save();
-		// elements.value = JSON.parse(
-		// 	localStorage.getItem("STORE_ELEMENTS") || "[]"
-		// );
 
-		console.log(elements.value);
 		nextTick(async () => {
-            const a = await getHistorySnapshot();
-            console.log(a);
+            await getHistorySnapshot();
 			renderElements(elements.value);
 		});
 	}, 100);

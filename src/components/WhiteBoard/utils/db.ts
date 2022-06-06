@@ -7,10 +7,8 @@ class DB {
     private db: IDBPDatabase | undefined;
     async init() {
         if (!this.db) {
-            console.log("======ww========");
             this.db = await openDB(DB_NAME, 1, {
                 upgrade(db) {
-                    console.log("==============");
                     if (!db.objectStoreNames.contains("history")) {
                         const objectStore = db.createObjectStore("history", {
                             keyPath: "id",
@@ -25,8 +23,18 @@ class DB {
         }
     }
 
-    async getData(query?: string) {
-        return await this.db?.transaction("history").objectStore("history").get(3);
+    async delete(keys: number[]) {
+        for (const key of keys) {
+            await this.db?.transaction("history", "readwrite").objectStore("history").delete(key);
+        }
+    }
+
+    async getData(key: number) {
+        return await this.db?.transaction("history").objectStore("history").get(key);
+    }
+
+    async getAllKeys() {
+        return await this.db?.transaction("history").objectStore("history").getAllKeys();
     }
 
     async setData(elements: IElement[]) {

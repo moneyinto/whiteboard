@@ -17,12 +17,14 @@ export default (
     canvas: Ref<HTMLCanvasElement | null>,
     context: Ref<CanvasRenderingContext2D | null>,
     elements: Ref<IElement[]>,
-    canvasConfig: ICanvasConfig
+    canvasConfig: ICanvasConfig,
+    snapshotKeys: Ref<number[]>,
+    snapshotCursor: Ref<number>
 ) => {
     const { createPenElement } = useCreateElement(elements, canvasConfig);
     const { updateElement } = useUpdateElement();
     const { renderElements } = useRenderElement(canvas, context, canvasConfig);
-    const { addHistorySnapshot } = useHistorySnapshot();
+    const { addHistorySnapshot } = useHistorySnapshot(elements, snapshotKeys, snapshotCursor);
     let targetElement: IElement | null = null;
     let startPoint: IPoint | null = null;
 
