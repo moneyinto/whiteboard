@@ -8,11 +8,7 @@
 			:style="{
 				width: canvasDomWidth,
 				height: canvasDomHeight,
-				cursor: {
-					MOUSE: 'grabbing',
-					PEN: 'crosshair',
-					ERASER: `url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAARRJREFUOE/dlDFLxEAQhd+BVouFZ3vlQuwSyI+5a7PBRkk6k9KzTOwStJFsWv0xgaQzkNLWszim0kL2OOFc9oKRYHFTz37Lm/dmJhi5JiPzcBjAOYDz7WheADz3jalP8oIxds85P3Zd90RBqqpad133SUSXAJ5M4H3AhWVZd1EUzYQQP96VZYkkSV7btr02QY1Axtgqz/NTz/OM6qSUCMNwRURneoMJOLdt+7Gu643MfeU4zrppmgt9pibgjRBiWRRFb0R934eUcgngdrfxX4CjSwZj7C3Lsqnu8Lc05XQQBO9ENP2NKapnE5s4jme608rhNE2HxWb7qwr2A+f8SAv2BxFdDQ32rpLRVu9Pl+0wztcg6V/VPW4Vw1FsawAAAABJRU5ErkJggg==') 10 10, auto`
-				}[canvasConfig.optionType]
+				cursor: cursor
 			}"
 		></canvas>
 
@@ -32,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, reactive, watch } from "vue";
+import { ref, nextTick, reactive, watch, onUnmounted, computed } from "vue";
 import ToolBar from "./components/Toolbar.vue";
 import useHandlePointer from "./hooks/useHandlePointer";
 import useRenderElement from "./hooks/useRenderElement";
@@ -55,6 +51,15 @@ const canvasDomHeight = ref(0 + "px");
 const snapshotCursor = ref(-1);
 const snapshotKeys = ref([]);
 
+const cursor = computed(() => {
+	if (canvasConfig.isMoveOrScale) return "grabbing";
+	return {
+		MOUSE: "default",
+		PEN: "crosshair",
+		ERASER: "url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAARRJREFUOE/dlDFLxEAQhd+BVouFZ3vlQuwSyI+5a7PBRkk6k9KzTOwStJFsWv0xgaQzkNLWszim0kL2OOFc9oKRYHFTz37Lm/dmJhi5JiPzcBjAOYDz7WheADz3jalP8oIxds85P3Zd90RBqqpad133SUSXAJ5M4H3AhWVZd1EUzYQQP96VZYkkSV7btr02QY1Axtgqz/NTz/OM6qSUCMNwRURneoMJOLdt+7Gu643MfeU4zrppmgt9pibgjRBiWRRFb0R934eUcgngdrfxX4CjSwZj7C3Lsqnu8Lc05XQQBO9ENP2NKapnE5s4jme608rhNE2HxWb7qwr2A+f8SAv2BxFdDQ32rpLRVu9Pl+0wztcg6V/VPW4Vw1FsawAAAABJRU5ErkJggg==') 10 10, auto"
+	}[canvasConfig.optionType]
+});
+
 // 画布配置
 const canvasConfig = reactive<ICanvasConfig>({
 	offsetX: 0,
@@ -64,7 +69,9 @@ const canvasConfig = reactive<ICanvasConfig>({
 	zoom: 1,
 	optionType: OPTION_TYPE.MOUSE,
 	lineWidth: 5,
-	strokeColor: "#000000"
+	strokeColor: "#000000",
+	isDrawing: false,
+	isMoveOrScale: false
 });
 
 // 是否支持触摸
@@ -72,7 +79,7 @@ const canTouch = "ontouchstart" in (window as any);
 
 // 绘制元素集合
 const elements = ref<IElement[]>([]);
-const { handleDown, handleMove, handleUp } = useHandlePointer(
+const { handleDown, handleMove, handleUp, watchKeyDown, watchKeyUp } = useHandlePointer(
 	canvas,
 	context,
 	elements,
@@ -113,6 +120,9 @@ nextTick(async () => {
 	if (!canvas.value || !whiteboard.value) return;
 	context.value = canvas.value.getContext("2d");
 
+	window.addEventListener("keydown", watchKeyDown);
+	window.addEventListener("keyup", watchKeyUp);
+
 	if (canTouch) {
 		canvas.value.addEventListener("touchstart", handleDown);
 		canvas.value.addEventListener("touchmove", handleMove);
@@ -142,6 +152,20 @@ nextTick(async () => {
 	}, 100);
 	const resizeObserver = new ResizeObserver(resize);
 	resizeObserver.observe(whiteboard.value);
+});
+
+onUnmounted(() => {
+	window.removeEventListener("keydown", watchKeyDown);
+	window.removeEventListener("keyup", watchKeyUp);
+	if (canTouch) {
+		canvas.value.removeEventListener("touchstart", handleDown);
+		canvas.value.removeEventListener("touchmove", handleMove);
+		canvas.value.removeEventListener("touchend", handleUp);
+	} else {
+		canvas.value.removeEventListener("pointerdown", handleDown);
+		canvas.value.removeEventListener("pointermove", handleMove);
+		canvas.value.removeEventListener("pointerup", handleUp);
+	}
 });
 </script>
 

@@ -49,6 +49,10 @@ export interface IPenElement extends IBaseElement {
  * zoom: canvas缩放比例
  * 
  * optionType: 操作类型
+ * 
+ * isDrawing: 是否处于绘制阶段
+ * 
+ * isMoveOrScale: 是否处于移动和缩放阶段
  */
 export interface ICanvasConfig {
     offsetX: number;
@@ -59,6 +63,8 @@ export interface ICanvasConfig {
     optionType: string;
     lineWidth: number;
     strokeColor: string;
+    isDrawing: boolean;
+    isMoveOrScale: boolean;
 }
 
 export type IBoundsCoords = [number, number, number, number];

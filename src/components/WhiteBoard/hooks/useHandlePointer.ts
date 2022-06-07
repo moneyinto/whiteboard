@@ -42,53 +42,64 @@ export default (
     };
 
     const handleDown = (event: PointerEvent | TouchEvent) => {
+        if (canvasConfig.isMoveOrScale) {
+            const { x, y } = getWhiteBoardPointPosition(
+                event,
+                canvasConfig
+            );
+            startPoint = [x, y];
+            return;
+        }
+
         switch (canvasConfig.optionType) {
             case OPTION_TYPE.MOUSE: {
-                const { x, y } = getWhiteBoardPointPosition(
-                    event,
-                    canvasConfig
-                );
-                startPoint = [x, y];
+                canvasConfig.isDrawing = true;
                 break;
             }
             case OPTION_TYPE.PEN: {
                 const { x, y } = getCanvasPointPosition(event, canvasConfig);
                 targetElement = createPenElement({ x, y });
+                canvasConfig.isDrawing = true;
                 break;
             }
             case OPTION_TYPE.ERASER: {
                 const { x, y } = getCanvasPointPosition(event, canvasConfig);
                 startPoint = [x, y];
+                canvasConfig.isDrawing = true;
                 break;
             }
         }
     };
 
     const handleMove = throttleRAF((event: PointerEvent | TouchEvent) => {
-        switch (canvasConfig.optionType) {
-            case OPTION_TYPE.MOUSE: {
-                canvasMove(event);
-                break;
+        if (canvasConfig.isDrawing) {
+            switch (canvasConfig.optionType) {
+                case OPTION_TYPE.MOUSE: {
+                    // canvasMove(event);
+                    break;
+                }
+                case OPTION_TYPE.PEN: {
+                    if (!targetElement) return;
+                    const { x, y } = getCanvasPointPosition(event, canvasConfig);
+                    drawOnCanvas(x, y);
+                    break;
+                }
+                case OPTION_TYPE.ERASER: {
+                    if (!startPoint) return;
+                    const { x, y } = getCanvasPointPosition(event, canvasConfig);
+                    checkCrossElements(
+                        startPoint,
+                        x,
+                        y,
+                        elements.value
+                    );
+                    renderElements(elements.value);
+                    startPoint = [x, y];
+                    break;
+                }
             }
-            case OPTION_TYPE.PEN: {
-                if (!targetElement) return;
-                const { x, y } = getCanvasPointPosition(event, canvasConfig);
-                drawOnCanvas(x, y);
-                break;
-            }
-            case OPTION_TYPE.ERASER: {
-                if (!startPoint) return;
-                const { x, y } = getCanvasPointPosition(event, canvasConfig);
-                checkCrossElements(
-                    startPoint,
-                    x,
-                    y,
-                    elements.value
-                );
-                renderElements(elements.value);
-                startPoint = [x, y];
-                break;
-            }
+        } else {
+            canvasMove(event);
         }
     });
 
@@ -111,59 +122,76 @@ export default (
     };
 
     const handleUp = (event: PointerEvent | TouchEvent) => {
-        switch (canvasConfig.optionType) {
-            case OPTION_TYPE.MOUSE: {
-                canvasMove(event);
-                break;
-            }
-            case OPTION_TYPE.PEN: {
-                if (!targetElement) return;
-                const points = targetElement.points;
-                if (points.length === 1) {
-                    updateElement(targetElement, {
-                        points: [...points, [0.0001, 0.0001]]
-                    });
-                } else {
-                    const { x, y } = getCanvasPointPosition(
-                        event,
-                        canvasConfig
+        if (canvasConfig.isDrawing)  {
+            switch (canvasConfig.optionType) {
+                case OPTION_TYPE.MOUSE: {
+                    // canvasMove(event);
+                    break;
+                }
+                case OPTION_TYPE.PEN: {
+                    if (!targetElement) return;
+                    const points = targetElement.points;
+                    if (points.length === 1) {
+                        updateElement(targetElement, {
+                            points: [...points, [0.0001, 0.0001]]
+                        });
+                    } else {
+                        const { x, y } = getCanvasPointPosition(
+                            event,
+                            canvasConfig
+                        );
+                        updateElement(targetElement, {
+                            points: [
+                                ...points,
+                                [x - targetElement.x, y - targetElement.y]
+                            ]
+                        });
+                    }
+                    // 更新一下元素width和height 暂时没有考虑旋转角度
+                    const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(
+                        targetElement.points
                     );
                     updateElement(targetElement, {
-                        points: [
-                            ...points,
-                            [x - targetElement.x, y - targetElement.y]
-                        ]
+                        width: maxX - minX,
+                        height: maxY - minY
                     });
+                    addHistorySnapshot(elements.value);
+                    renderElements(elements.value);
+                    break;
                 }
-                // 更新一下元素width和height 暂时没有考虑旋转角度
-                const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(
-                    targetElement.points
-                );
-                updateElement(targetElement, {
-                    width: maxX - minX,
-                    height: maxY - minY
-                });
-                addHistorySnapshot(elements.value);
-                localStorage.setItem("STORE_ELEMENTS", JSON.stringify(elements.value));
-                renderElements(elements.value);
-                break;
+                case OPTION_TYPE.ERASER: {
+                    // 橡皮擦模式在结束时过滤掉删除的元素
+                    elements.value = elements.value.filter(element => !element.isDelete);
+                    addHistorySnapshot(elements.value);
+                    renderElements(elements.value);
+                    break;
+                }
             }
-            case OPTION_TYPE.ERASER: {
-                // 橡皮擦模式在结束时过滤掉删除的元素
-                elements.value = elements.value.filter(element => !element.isDelete);
-                addHistorySnapshot(elements.value);
-                localStorage.setItem("STORE_ELEMENTS", JSON.stringify(elements.value));
-                renderElements(elements.value);
-                break;
-            }
+        } else {
+            canvasMove(event);
         }
         targetElement = null;
         startPoint = null;
+        canvasConfig.isDrawing = false;
+    };
+
+    const watchKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Meta" || event.key === "Control") {
+            canvasConfig.isMoveOrScale = true;
+        }
+    };
+
+    const watchKeyUp = (event: KeyboardEvent) => {
+        if (event.key === "Meta" || event.key === "Control") {
+            canvasConfig.isMoveOrScale = false;
+        }
     };
 
     return {
         handleDown,
         handleMove,
-        handleUp
+        handleUp,
+        watchKeyUp,
+        watchKeyDown
     };
 };
