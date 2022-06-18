@@ -1,7 +1,8 @@
 import { Ref } from "vue";
 import { OPTION_TYPE } from "../config";
-import { ICanvasConfig, IElement, IPenElement } from "../types";
+import { ICanvasConfig, IElement, IPenElement, IPoint } from "../types";
 import {
+    getBoundsCoordsFromPoints,
     getElementBoundsCoords,
     getPenSvgPath,
     getVisibleElements
@@ -10,8 +11,21 @@ import {
 export default (
     canvas: Ref<HTMLCanvasElement | null>,
     context: Ref<CanvasRenderingContext2D | null>,
-    canvasConfig: ICanvasConfig
+    canvasConfig: ICanvasConfig,
+    selectedElement: Ref<IElement | undefined>
 ) => {
+    const drawCheckBox = (points: IPoint[]) => {
+        context.value!.save();
+
+        const [ minX, minY, maxX, maxY ] = getBoundsCoordsFromPoints(points);
+        context.value!.strokeStyle = "#333";
+        context.value!.lineWidth = 2;
+        context.value!.setLineDash([3, 3]);
+        context.value!.strokeRect(minX - 4, minY - 4, maxX - minX + 8, maxY - minY + 8);
+
+        context.value!.restore();
+    };
+
     // 绘制笔记
     const renderPenElement = (element: IPenElement) => {
         // 点少于两个时不进行绘制
@@ -47,6 +61,12 @@ export default (
         context.value.fillStyle = element.strokeColor;
         const path = getPenSvgPath(element.points, element.lineWidth);
         context.value.fill(path);
+
+        // 绘制选中框
+        if (selectedElement.value && selectedElement.value.id === element.id) {
+            drawCheckBox(element.points);
+        }
+
         context.value.stroke();
 
         // 状态复原

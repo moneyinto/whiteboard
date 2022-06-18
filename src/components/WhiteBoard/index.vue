@@ -92,7 +92,7 @@ const { handleDown, handleMove, handleUp, watchKeyDown, watchKeyUp } = useHandle
 	hoverElement,
 	selectedElement
 );
-const { renderElements } = useRenderElement(canvas, context, canvasConfig);
+const { renderElements } = useRenderElement(canvas, context, canvasConfig, selectedElement);
 const { updateScroll, handleWeel } = useZoom(canvas, canvasConfig);
 const { clearElements } = useClearElement(
 	canvas,

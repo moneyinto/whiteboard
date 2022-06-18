@@ -100,6 +100,11 @@ export const getZoomScroll = (
     };
 };
 
+/**
+ * 获取所有点形成的区域的 最小横纵坐标值 和 最大横纵坐标值
+ * @param points 
+ * @returns 
+ */
 export const getBoundsCoordsFromPoints = (points: IPoint[]): IBoundsCoords => {
     let minX = Infinity;
     let minY = Infinity;
@@ -382,20 +387,23 @@ export const getViewCanvasBoundsCoords = (
  * @param zoom 
  * @param x 
  * @param y 
+ * @param selectedElement 
  * @returns 
  */
 export const getPositionElement = (
     elements: IElement[],
     zoom: number,
     x: number,
-    y: number
+    y: number,
+    selectedElement: IElement | undefined
 ) => {
+    // 未计算线条宽度！！！！！！！！！！！！！
     // 只通过一个点确定不准！！！！！！！！！！！！！！ 方案二 采用邻居两个点的线段 判断移动点距离两点的距离和与两点之间的距离进行比较 再结合方案一 来提升精度
     // 下面方法暂时为判断绘制线条！！！！！！！！
     // 等可以绘制形状后再补充完善方法！！！！！！！！！！！
     // 计算鼠标点位与元素点位之间的距离来确认是否选中到元素
     // 定义判断基础距离
-    const distance = 10 * zoom;
+    const distance = 5 * zoom;
     let hoverElement: IElement | undefined;
     for (const element of elements) {
         // 对可视区域元素进行进一步的过滤 降低计算
@@ -407,6 +415,11 @@ export const getPositionElement = (
                 y: y - element.y
             };
 
+            if (selectedElement && selectedElement.id === element.id) {
+                hoverElement = selectedElement;
+                break;
+            }
+
             // 方案一
             // for (const point of element.points) {
             //     const r = Math.hypot(point[0] - mousePoint.x, point[1] - mousePoint.y);
@@ -416,20 +429,20 @@ export const getPositionElement = (
             //         break;
             //     }
             // }
-            
+
             // 方案二
             for (let i = 0; i < element.points.length - 1; i++) {
-                const A = [element.points[i][0], element.points[i][1]];
-                const B = [element.points[i + 1][0], element.points[i + 1][1]];
+                const A = element.points[i];
+                const B = element.points[i + 1];
                 // 与A点的距离
                 const rA = Math.hypot(A[0] - mousePoint.x, A[1] - mousePoint.y);
                 // 与B点的距离
                 const rB = Math.hypot(B[0] - mousePoint.x, B[1] - mousePoint.y);
                 // AB点距离
-                const rAB = Math.hypot(A[0] - B[0], A[1] - B[0]);
+                const rAB = Math.hypot(A[0] - B[0], A[1] - B[1]);
                 // 判断条件 -- 1、与A点距离小于distance 2、与B点距离小于distance 3、与A点距离 与B点距离 两者之和 与 AB点距离 的差 小于 distance
                 // 三个条件满足一个即为符合要求的元素
-                if (rA < distance || rB < distance || (rAB - rA - rB) < distance) {
+                if (rA < distance || rB < distance || (rA + rB - rAB) < distance) {
                     hoverElement =  element;
                     break;
                 }

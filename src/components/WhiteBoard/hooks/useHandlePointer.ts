@@ -1,4 +1,4 @@
-import { Ref } from "vue";
+import { Ref, render } from "vue";
 import { OPTION_TYPE } from "../config";
 import { ICanvasConfig, IElement, IPoint } from "../types";
 import {
@@ -27,7 +27,7 @@ export default (
 ) => {
     const { createPenElement } = useCreateElement(elements, canvasConfig);
     const { updateElement } = useUpdateElement();
-    const { renderElements } = useRenderElement(canvas, context, canvasConfig);
+    const { renderElements } = useRenderElement(canvas, context, canvasConfig, selectedElement);
     const { addHistorySnapshot } = useHistorySnapshot(elements, snapshotKeys, snapshotCursor);
     let targetElement: IElement | null = null;
     let startPoint: IPoint | null = null;
@@ -62,7 +62,8 @@ export default (
                 const normalizedCanvasWidth = canvas.value!.width / canvasConfig.zoom;
                 const normalizedCanvasHeight = canvas.value!.height / canvasConfig.zoom;
                 const visibleElements = getVisibleElements(elements.value, canvasConfig.scrollX, canvasConfig.scrollY, normalizedCanvasWidth, normalizedCanvasHeight);
-                selectedElement.value = getPositionElement(visibleElements, canvasConfig.zoom, x, y);
+                selectedElement.value = getPositionElement(visibleElements, canvasConfig.zoom, x, y, selectedElement.value);
+                renderElements(elements.value);
                 break;
             }
             case OPTION_TYPE.PEN: {
@@ -125,7 +126,7 @@ export default (
             const normalizedCanvasWidth = canvas.value!.width / canvasConfig.zoom;
             const normalizedCanvasHeight = canvas.value!.height / canvasConfig.zoom;
             const visibleElements = getVisibleElements(elements.value, canvasConfig.scrollX, canvasConfig.scrollY, normalizedCanvasWidth, normalizedCanvasHeight);
-            hoverElement.value = getPositionElement(visibleElements, canvasConfig.zoom, x, y);
+            hoverElement.value = getPositionElement(visibleElements, canvasConfig.zoom, x, y, selectedElement.value);
         }
     });
 
