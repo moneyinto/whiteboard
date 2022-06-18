@@ -25,6 +25,7 @@ interface IBaseElement {
     y: number;
     width: number;
     height: number;
+    [key: string]: unknown;
 }
 
 export type IElement = IPenElement;

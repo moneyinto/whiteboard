@@ -147,7 +147,7 @@ export const getElementBoundsCoords = (element: IElement): IBoundsCoords => {
 };
 
 // throttle callback to execute once per animation frame
-export const throttleRAF = <T extends any[]>(fn: (...args: T) => void) => {
+export const throttleRAF = <T extends unknown[]>(fn: (...args: T) => void) => {
     let handle: number | null = null;
     let lastArgs: T | null = null;
     let callback: ((...args: T) => void) | null = null;

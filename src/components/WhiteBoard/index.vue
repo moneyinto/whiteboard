@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, reactive, watch, onUnmounted, computed } from "vue";
+import { ref, nextTick, reactive, onUnmounted, computed } from "vue";
 import ToolBar from "./components/Toolbar.vue";
 import useHandlePointer from "./hooks/useHandlePointer";
 import useRenderElement from "./hooks/useRenderElement";
@@ -78,7 +78,7 @@ const canvasConfig = reactive<ICanvasConfig>({
 });
 
 // 是否支持触摸
-const canTouch = "ontouchstart" in (window as any);
+const canTouch = "ontouchstart" in window;
 
 // 绘制元素集合
 const elements = ref<IElement[]>([]);
@@ -163,13 +163,13 @@ onUnmounted(() => {
 	window.removeEventListener("keydown", watchKeyDown);
 	window.removeEventListener("keyup", watchKeyUp);
 	if (canTouch) {
-		canvas.value.removeEventListener("touchstart", handleDown);
-		canvas.value.removeEventListener("touchmove", handleMove);
-		canvas.value.removeEventListener("touchend", handleUp);
+		canvas.value?.removeEventListener("touchstart", handleDown);
+		canvas.value?.removeEventListener("touchmove", handleMove);
+		canvas.value?.removeEventListener("touchend", handleUp);
 	} else {
-		canvas.value.removeEventListener("pointerdown", handleDown);
-		canvas.value.removeEventListener("pointermove", handleMove);
-		canvas.value.removeEventListener("pointerup", handleUp);
+		canvas.value?.removeEventListener("pointerdown", handleDown);
+		canvas.value?.removeEventListener("pointermove", handleMove);
+		canvas.value?.removeEventListener("pointerup", handleUp);
 	}
 });
 </script>

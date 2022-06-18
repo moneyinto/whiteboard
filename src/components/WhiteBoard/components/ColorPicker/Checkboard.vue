@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps, defineEmits } from "vue";
+import { computed, defineProps } from "vue";
 
 const checkboardCache: { [key: string]: unknown } = {};
 
@@ -31,8 +31,6 @@ const getCheckboard = (white: string, grey: string, size: number) => {
     checkboardCache[key] = checkboard;
     return checkboard;
 };
-
-const emit = defineEmits(["colorChange"]);
 
 const props = defineProps({
     size: {

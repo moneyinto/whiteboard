@@ -1,4 +1,4 @@
-import { Ref, render } from "vue";
+import { Ref } from "vue";
 import { OPTION_TYPE } from "../config";
 import { ICanvasConfig, IElement, IPoint } from "../types";
 import {

@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineEmits, defineProps, PropType, ref, toRefs, watch } from "vue";
+import { defineEmits, defineProps, PropType, ref, toRefs } from "vue";
 import { OPTION_TYPE } from "../config";
 import Mouse from "../icons/Mouse.vue";
 import Pen from "../icons/Pen.vue";
@@ -88,7 +88,6 @@ import Clear from "../icons/Clear.vue";
 import ColorPicker from "./ColorPicker/index.vue";
 import Eraser from "../icons/Eraser.vue";
 import Revoke from "../icons/Revoke.vue";
-import useHistorySnapshot from "../hooks/useHistorySnapshot";
 
 const emit = defineEmits(["update:optionType", "update:lineWidth", "update:strokeColor", "update:zoom", "zoomChange", "clear", "redo", "undo"]);
 

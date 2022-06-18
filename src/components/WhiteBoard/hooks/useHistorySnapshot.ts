@@ -1,4 +1,4 @@
-import { debounce, zip } from "lodash";
+import { debounce } from "lodash";
 import { Ref } from "vue";
 import { IElement } from "../types";
 import db from "../utils/db";
