@@ -5,6 +5,8 @@ import {
     checkCrossElements,
     getBoundsCoordsFromPoints,
     getCanvasPointPosition,
+    getPositionElement,
+    getVisibleElements,
     getWhiteBoardPointPosition,
     throttleRAF
 } from "../utils";
@@ -19,7 +21,9 @@ export default (
     elements: Ref<IElement[]>,
     canvasConfig: ICanvasConfig,
     snapshotKeys: Ref<number[]>,
-    snapshotCursor: Ref<number>
+    snapshotCursor: Ref<number>,
+    hoverElement: Ref<IElement | undefined>,
+    selectedElement: Ref<IElement | undefined>
 ) => {
     const { createPenElement } = useCreateElement(elements, canvasConfig);
     const { updateElement } = useUpdateElement();
@@ -29,7 +33,7 @@ export default (
     let startPoint: IPoint | null = null;
 
     const canvasMove = (event: PointerEvent | TouchEvent) => {
-        if (startPoint) {
+        if (startPoint && canvasConfig.isMoveOrScale) {
             const { x, y } = getWhiteBoardPointPosition(
                 event,
                 canvasConfig
@@ -53,7 +57,12 @@ export default (
 
         switch (canvasConfig.optionType) {
             case OPTION_TYPE.MOUSE: {
-                canvasConfig.isDrawing = true;
+                // 选定鼠标点击的元素
+                const { x, y } = getCanvasPointPosition(event, canvasConfig);
+                const normalizedCanvasWidth = canvas.value!.width / canvasConfig.zoom;
+                const normalizedCanvasHeight = canvas.value!.height / canvasConfig.zoom;
+                const visibleElements = getVisibleElements(elements.value, canvasConfig.scrollX, canvasConfig.scrollY, normalizedCanvasWidth, normalizedCanvasHeight);
+                selectedElement.value = getPositionElement(visibleElements, canvasConfig.zoom, x, y);
                 break;
             }
             case OPTION_TYPE.PEN: {
@@ -72,10 +81,10 @@ export default (
     };
 
     const handleMove = throttleRAF((event: PointerEvent | TouchEvent) => {
+        // 绘制
         if (canvasConfig.isDrawing) {
             switch (canvasConfig.optionType) {
                 case OPTION_TYPE.MOUSE: {
-                    // canvasMove(event);
                     break;
                 }
                 case OPTION_TYPE.PEN: {
@@ -87,19 +96,36 @@ export default (
                 case OPTION_TYPE.ERASER: {
                     if (!startPoint) return;
                     const { x, y } = getCanvasPointPosition(event, canvasConfig);
+                    const normalizedCanvasWidth = canvas.value!.width / canvasConfig.zoom;
+                    const normalizedCanvasHeight = canvas.value!.height / canvasConfig.zoom;
+                    const visibleElements = getVisibleElements(elements.value, canvasConfig.scrollX, canvasConfig.scrollY, normalizedCanvasWidth, normalizedCanvasHeight);
                     checkCrossElements(
                         startPoint,
                         x,
                         y,
-                        elements.value
+                        visibleElements
                     );
                     renderElements(elements.value);
                     startPoint = [x, y];
                     break;
                 }
             }
-        } else {
+            return;
+        } 
+        
+        // 缩放与移动
+        if (canvasConfig.isMoveOrScale) {
             canvasMove(event);
+            return;
+        }
+
+        if (canvasConfig.optionType === OPTION_TYPE.MOUSE) {
+            // 对鼠标移动位置进行判断 是否处于元素之上
+            const { x, y } = getCanvasPointPosition(event, canvasConfig);
+            const normalizedCanvasWidth = canvas.value!.width / canvasConfig.zoom;
+            const normalizedCanvasHeight = canvas.value!.height / canvasConfig.zoom;
+            const visibleElements = getVisibleElements(elements.value, canvasConfig.scrollX, canvasConfig.scrollY, normalizedCanvasWidth, normalizedCanvasHeight);
+            hoverElement.value = getPositionElement(visibleElements, canvasConfig.zoom, x, y);
         }
     });
 

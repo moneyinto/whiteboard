@@ -244,7 +244,6 @@ export const crossMul = (v1: IPoint, v2: IPoint) => {
  * @param x
  * @param y
  * @param elements
- * @param canvasConfig
  */
 export const checkCrossElements = (
     startPonit: IPoint,
@@ -255,6 +254,7 @@ export const checkCrossElements = (
     // ！！！！！！！！！！！！！！暂不考虑线条粗细的情况
     // 交点的方式 当线条特别短时不是很灵敏！！！！！！！！！！！
     // ！！！！！可以考虑点到点两点之间距离小于多少为一个判断的界限来判定 只要存在一点 与 橡皮点 的直线值小于 min 则认为橡皮擦除到改元素
+    // 过滤元素 只对可视区域元素进行判断 降低不必要的性能损耗
     for (const element of elements) {
         const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(
             element.points
@@ -374,4 +374,70 @@ export const getViewCanvasBoundsCoords = (
         normalizedCanvasWidth - scrollX,
         normalizedCanvasHeight - scrollY
     ];
+};
+
+/**
+ * 获取符合位置点所在的元素
+ * @param elements 
+ * @param zoom 
+ * @param x 
+ * @param y 
+ * @returns 
+ */
+export const getPositionElement = (
+    elements: IElement[],
+    zoom: number,
+    x: number,
+    y: number
+) => {
+    // 只通过一个点确定不准！！！！！！！！！！！！！！ 方案二 采用邻居两个点的线段 判断移动点距离两点的距离和与两点之间的距离进行比较 再结合方案一 来提升精度
+    // 下面方法暂时为判断绘制线条！！！！！！！！
+    // 等可以绘制形状后再补充完善方法！！！！！！！！！！！
+    // 计算鼠标点位与元素点位之间的距离来确认是否选中到元素
+    // 定义判断基础距离
+    const distance = 10 * zoom;
+    let hoverElement: IElement | undefined;
+    for (const element of elements) {
+        // 对可视区域元素进行进一步的过滤 降低计算
+        const [minX, minY, maxX, maxY] = getElementBoundsCoords(element);
+        if (x > minX && x < maxX && y > minY && y < maxY) {
+            // 符合条件的元素（线条）进行进一步判断
+            const mousePoint = {
+                x: x - element.x,
+                y: y - element.y
+            };
+
+            // 方案一
+            // for (const point of element.points) {
+            //     const r = Math.hypot(point[0] - mousePoint.x, point[1] - mousePoint.y);
+            //     if (r < distance) {
+            //         // 符合条件
+            //         hoverElement = element;
+            //         break;
+            //     }
+            // }
+            
+            // 方案二
+            for (let i = 0; i < element.points.length - 1; i++) {
+                const A = [element.points[i][0], element.points[i][1]];
+                const B = [element.points[i + 1][0], element.points[i + 1][1]];
+                // 与A点的距离
+                const rA = Math.hypot(A[0] - mousePoint.x, A[1] - mousePoint.y);
+                // 与B点的距离
+                const rB = Math.hypot(B[0] - mousePoint.x, B[1] - mousePoint.y);
+                // AB点距离
+                const rAB = Math.hypot(A[0] - B[0], A[1] - B[0]);
+                // 判断条件 -- 1、与A点距离小于distance 2、与B点距离小于distance 3、与A点距离 与B点距离 两者之和 与 AB点距离 的差 小于 distance
+                // 三个条件满足一个即为符合要求的元素
+                if (rA < distance || rB < distance || (rAB - rA - rB) < distance) {
+                    hoverElement =  element;
+                    break;
+                }
+            }
+
+            // 已找到符合条件的 退出循环
+            if (hoverElement) break;
+        }
+    }
+    return hoverElement;
 };

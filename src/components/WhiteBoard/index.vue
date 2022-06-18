@@ -50,9 +50,12 @@ const canvasDomWidth = ref(0 + "px");
 const canvasDomHeight = ref(0 + "px");
 const snapshotCursor = ref(-1);
 const snapshotKeys = ref([]);
+const hoverElement = ref<IElement | undefined>();
+const selectedElement = ref<IElement | undefined>();
 
 const cursor = computed(() => {
 	if (canvasConfig.isMoveOrScale) return "grabbing";
+	if (hoverElement.value) return "move";
 	return {
 		MOUSE: "default",
 		PEN: "crosshair",
@@ -85,7 +88,9 @@ const { handleDown, handleMove, handleUp, watchKeyDown, watchKeyUp } = useHandle
 	elements,
 	canvasConfig,
 	snapshotKeys,
-	snapshotCursor
+	snapshotCursor,
+	hoverElement,
+	selectedElement
 );
 const { renderElements } = useRenderElement(canvas, context, canvasConfig);
 const { updateScroll, handleWeel } = useZoom(canvas, canvasConfig);
