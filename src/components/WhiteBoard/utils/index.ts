@@ -211,7 +211,7 @@ export const getPenSvgPath = (points: number[][], lineWidth: number) => {
         smoothing: 0.5,
         streamline: 0.5,
         easing: (t) => Math.sin((t * Math.PI) / 2),
-        last: true
+        last: false
     };
     const storkePoints = getStroke(points, options);
     const max = storkePoints.length - 1;
