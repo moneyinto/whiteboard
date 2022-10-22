@@ -517,7 +517,8 @@ export enum ELEMENT_RESIZE {
     RIGHT_TOP = "nesw-resize",
     RIGHT = "ew-resize",
     RIGHT_BOTTOM = "nwse-resize",
-    TOP_ANGLE = "grabbing"
+    TOP_ANGLE = "grabbing",
+    MOVE = "move"
 }
 
 /**

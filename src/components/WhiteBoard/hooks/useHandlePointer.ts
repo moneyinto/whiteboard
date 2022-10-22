@@ -3,6 +3,7 @@ import { OPTION_TYPE } from "../config";
 import { ICanvasConfig, IElement, IPoint } from "../types";
 import {
     checkCrossElements,
+    ELEMENT_RESIZE,
     getBoundsCoordsFromPoints,
     getCanvasPointPosition,
     getElementOption,
@@ -69,6 +70,7 @@ export default (
             case OPTION_TYPE.MOUSE: {
                 // 选定鼠标点击的元素
                 const { x, y } = getCanvasPointPosition(event, canvasConfig);
+                startPoint = [x, y];
                 
                 // 选中执行元素操作
                 if (selectedElement.value) {
@@ -154,8 +156,15 @@ export default (
         }
 
         if (canvasConfig.optionType === OPTION_TYPE.MOUSE) {
-            // 对鼠标移动位置进行判断 是否处于元素之上
             const { x, y } = getCanvasPointPosition(event, canvasConfig);
+
+            if (canvasConfig.isElementOption) {
+                // 执行元素操作
+                optionElement(x, y);
+                return;
+            }
+
+            // 对鼠标移动位置进行判断 是否处于元素之上
             const normalizedCanvasWidth = canvas.value!.width / canvasConfig.zoom;
             const normalizedCanvasHeight = canvas.value!.height / canvasConfig.zoom;
             const visibleElements = getVisibleElements(elements.value, canvasConfig.scrollX, canvasConfig.scrollY, normalizedCanvasWidth, normalizedCanvasHeight);
@@ -167,6 +176,23 @@ export default (
             }
         }
     });
+
+    const optionElement = (x: number, y: number) => {
+        if (!selectedElement.value || !startPoint) return;
+        switch(canvasConfig.elementOption) {
+            case ELEMENT_RESIZE.MOVE: {
+                const moveX = x - startPoint[0];
+                const moveY = y - startPoint[1];
+                startPoint = [x, y];
+                updateElement(selectedElement.value, {
+                    x: selectedElement.value.x + moveX,
+                    y: selectedElement.value.y + moveY
+                });
+                break;
+            }
+        }
+        renderElements(elements.value);
+    };
 
     const drawOnCanvas = (x: number, y: number) => {
         if (!targetElement) return;
