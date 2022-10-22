@@ -49,7 +49,7 @@ const canvasHeighth = ref(0 * canvasScale);
 const canvasDomWidth = ref(0 + "px");
 const canvasDomHeight = ref(0 + "px");
 const snapshotCursor = ref(-1);
-const snapshotKeys = ref([]);
+const snapshotKeys = ref<number[]>([]);
 const hoverElement = ref<IElement | undefined>();
 const selectedElement = ref<IElement | undefined>();
 
@@ -75,7 +75,8 @@ const canvasConfig = reactive<ICanvasConfig>({
 	strokeColor: "#000000",
 	isDrawing: false,
 	isMoveOrScale: false,
-    elementOption: ""
+    elementOption: "",
+    isElementOption: false
 });
 
 // 是否支持触摸

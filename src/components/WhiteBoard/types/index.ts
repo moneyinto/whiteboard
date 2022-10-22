@@ -54,6 +54,10 @@ export interface IPenElement extends IBaseElement {
  * isDrawing: 是否处于绘制阶段
  * 
  * isMoveOrScale: 是否处于移动和缩放阶段
+ * 
+ * elementOption: 对元素执行的操作 移动 旋转 拉伸
+ * 
+ * isElementOption: 是否对元素进行操作
  */
 export interface ICanvasConfig {
     offsetX: number;
@@ -67,6 +71,7 @@ export interface ICanvasConfig {
     isDrawing: boolean;
     isMoveOrScale: boolean;
     elementOption: string;
+    isElementOption: boolean;
 }
 
 export type IBoundsCoords = [number, number, number, number];

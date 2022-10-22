@@ -33,6 +33,15 @@ export default (
     let targetElement: IElement | null = null;
     let startPoint: IPoint | null = null;
 
+    // 获取元素操作鼠标展示光标
+    const setElementOptiontMouseCursor = (x: number, y: number) => {
+        canvasConfig.elementOption = hoverElement.value ? "move" : "";
+        if (selectedElement.value) {
+            const elementOption = getElementOption([ x, y ], selectedElement.value);
+            if (elementOption) canvasConfig.elementOption = elementOption;
+        }
+    };
+
     const canvasMove = (event: PointerEvent | TouchEvent) => {
         if (startPoint && canvasConfig.isMoveOrScale) {
             const { x, y } = getWhiteBoardPointPosition(
@@ -60,10 +69,33 @@ export default (
             case OPTION_TYPE.MOUSE: {
                 // 选定鼠标点击的元素
                 const { x, y } = getCanvasPointPosition(event, canvasConfig);
-                const normalizedCanvasWidth = canvas.value!.width / canvasConfig.zoom;
-                const normalizedCanvasHeight = canvas.value!.height / canvasConfig.zoom;
-                const visibleElements = getVisibleElements(elements.value, canvasConfig.scrollX, canvasConfig.scrollY, normalizedCanvasWidth, normalizedCanvasHeight);
-                selectedElement.value = getPositionElement(visibleElements, canvasConfig.zoom, x, y, selectedElement.value);
+                
+                // 选中执行元素操作
+                if (selectedElement.value) {
+                    canvasConfig.elementOption = hoverElement.value ? "move" : "";
+                    const elementOption = getElementOption([ x, y ], selectedElement.value);
+                    if (elementOption) {
+                        canvasConfig.elementOption = elementOption;
+                    }
+                    if (canvasConfig.elementOption) {
+                        canvasConfig.isElementOption = true;
+                    } 
+                }
+                
+                // 没有执行元素操作 下面选中某个元素
+                if (!canvasConfig.isElementOption) {
+                    const normalizedCanvasWidth = canvas.value!.width / canvasConfig.zoom;
+                    const normalizedCanvasHeight = canvas.value!.height / canvasConfig.zoom;
+                    const visibleElements = getVisibleElements(elements.value, canvasConfig.scrollX, canvasConfig.scrollY, normalizedCanvasWidth, normalizedCanvasHeight);
+                    selectedElement.value = getPositionElement(visibleElements, canvasConfig.zoom, x, y, selectedElement.value);
+
+                    // 选中了元素 未松开鼠标 执行移动操作
+                    if (selectedElement.value) {
+                        canvasConfig.elementOption = "move";
+                        canvasConfig.isElementOption = true;
+                    }
+                }
+                
                 renderElements(elements.value);
                 break;
             }
@@ -129,11 +161,9 @@ export default (
             const visibleElements = getVisibleElements(elements.value, canvasConfig.scrollX, canvasConfig.scrollY, normalizedCanvasWidth, normalizedCanvasHeight);
             hoverElement.value = getPositionElement(visibleElements, canvasConfig.zoom, x, y, selectedElement.value);
 
-            // 当元素存在时
-            canvasConfig.elementOption = hoverElement.value ? "move" : "";
-            if (selectedElement.value) {
-                const elementOption = getElementOption([ x, y ], selectedElement.value);
-                if (elementOption) canvasConfig.elementOption = elementOption;
+            if (!canvasConfig.isElementOption) {
+                // 当元素存在时
+                setElementOptiontMouseCursor(x, y);
             }
         }
     });
@@ -208,6 +238,14 @@ export default (
         targetElement = null;
         startPoint = null;
         canvasConfig.isDrawing = false;
+
+        // 如果在执行元素操作时松开鼠标 重新判定一下鼠标光标展示
+        if (canvasConfig.isElementOption) {
+            const { x, y } = getCanvasPointPosition(event, canvasConfig);
+            setElementOptiontMouseCursor(x, y);
+        }
+
+        canvasConfig.isElementOption = false;
     };
 
     const watchKeyDown = (event: KeyboardEvent) => {

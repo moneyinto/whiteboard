@@ -118,7 +118,7 @@ const props = defineProps({
     },
 
     snapshotKeys: {
-        type: Array as PropType<number>,
+        type: Array as PropType<number[]>,
         required: true
     }
 });
