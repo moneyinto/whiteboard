@@ -66,6 +66,13 @@ export interface ICanvasConfig {
     strokeColor: string;
     isDrawing: boolean;
     isMoveOrScale: boolean;
+    elementOption: string;
 }
 
 export type IBoundsCoords = [number, number, number, number];
+
+export type IRectParameter = IBoundsCoords;
+
+export type IRect = Record<string, IRectParameter>;
+
+export type IElementOptions = Record<string, string>;

@@ -1,6 +1,14 @@
 import getStroke, { StrokeOptions } from "perfect-freehand";
 import { OPTION_TYPE } from "../config";
-import { IBoundsCoords, ICanvasConfig, IElement, IPoint } from "../types";
+import {
+    IBoundsCoords,
+    ICanvasConfig,
+    IElement,
+    IElementOptions,
+    IPoint,
+    IRect,
+    IRectParameter,
+} from "../types";
 
 /**
  * 生成随机码
@@ -39,7 +47,9 @@ export const getCanvasPointPosition = (
         x:
             (x - canvasConfig.offsetX) / canvasConfig.zoom -
             canvasConfig.scrollX,
-        y: (y - canvasConfig.offsetY) / canvasConfig.zoom - canvasConfig.scrollY
+        y:
+            (y - canvasConfig.offsetY) / canvasConfig.zoom -
+            canvasConfig.scrollY,
     };
 };
 
@@ -63,7 +73,7 @@ export const getWhiteBoardPointPosition = (
             : event.clientY;
     return {
         x: (x - canvasConfig.offsetX) / canvasConfig.zoom,
-        y: (y - canvasConfig.offsetY) / canvasConfig.zoom
+        y: (y - canvasConfig.offsetY) / canvasConfig.zoom,
     };
 };
 
@@ -96,14 +106,14 @@ export const getZoomScroll = (
 
     return {
         scrollX: baseScrollX + zoomOffsetScrollX,
-        scrollY: baseScrollY + zoomOffsetScrollY
+        scrollY: baseScrollY + zoomOffsetScrollY,
     };
 };
 
 /**
  * 获取所有点形成的区域的 最小横纵坐标值 和 最大横纵坐标值
- * @param points 
- * @returns 
+ * @param points
+ * @returns
  */
 export const getBoundsCoordsFromPoints = (points: IPoint[]): IBoundsCoords => {
     let minX = Infinity;
@@ -134,7 +144,7 @@ export const getElementBoundsCoords = (element: IElement): IBoundsCoords => {
             minX + element.x,
             minY + element.y,
             maxX + element.x,
-            maxY + element.y
+            maxY + element.y,
         ];
     }
 
@@ -142,7 +152,7 @@ export const getElementBoundsCoords = (element: IElement): IBoundsCoords => {
         element.x,
         element.y,
         element.x + element.width,
-        element.y + element.height
+        element.y + element.height,
     ];
 };
 
@@ -211,7 +221,7 @@ export const getPenSvgPath = (points: number[][], lineWidth: number) => {
         smoothing: 0.5,
         streamline: 0.5,
         easing: (t) => Math.sin((t * Math.PI) / 2),
-        last: false
+        last: false,
     };
     const storkePoints = getStroke(points, options);
     const max = storkePoints.length - 1;
@@ -293,11 +303,11 @@ export const checkCrossElements = (
             for (let i = 0; i < element.points.length - 1; i++) {
                 const A = [
                     element.points[i][0] + element.x,
-                    element.points[i][1] + element.y
+                    element.points[i][1] + element.y,
                 ];
                 const B = [
                     element.points[i + 1][0] + element.x,
-                    element.points[i + 1][1] + element.y
+                    element.points[i + 1][1] + element.y,
                 ];
                 const C = startPonit;
                 const D = [x, y];
@@ -377,18 +387,18 @@ export const getViewCanvasBoundsCoords = (
         0 - scrollX,
         0 - scrollY,
         normalizedCanvasWidth - scrollX,
-        normalizedCanvasHeight - scrollY
+        normalizedCanvasHeight - scrollY,
     ];
 };
 
 /**
  * 获取符合位置点所在的元素
- * @param elements 
- * @param zoom 
- * @param x 
- * @param y 
- * @param selectedElement 
- * @returns 
+ * @param elements
+ * @param zoom
+ * @param x
+ * @param y
+ * @param selectedElement
+ * @returns
  */
 export const getPositionElement = (
     elements: IElement[],
@@ -412,7 +422,7 @@ export const getPositionElement = (
             // 符合条件的元素（线条）进行进一步判断
             const mousePoint = {
                 x: x - element.x,
-                y: y - element.y
+                y: y - element.y,
             };
 
             if (selectedElement && selectedElement.id === element.id) {
@@ -442,8 +452,12 @@ export const getPositionElement = (
                 const rAB = Math.hypot(A[0] - B[0], A[1] - B[1]);
                 // 判断条件 -- 1、与A点距离小于distance 2、与B点距离小于distance 3、与A点距离 与B点距离 两者之和 与 AB点距离 的差 小于 distance
                 // 三个条件满足一个即为符合要求的元素
-                if (rA < distance || rB < distance || (rA + rB - rAB) < distance) {
-                    hoverElement =  element;
+                if (
+                    rA < distance ||
+                    rB < distance ||
+                    rA + rB - rAB < distance
+                ) {
+                    hoverElement = element;
                     break;
                 }
             }
@@ -453,4 +467,92 @@ export const getPositionElement = (
         }
     }
     return hoverElement;
+};
+
+/**
+ *
+ * @param param0 获取选中区域的九点区域坐标
+ * @returns
+ */
+export const getElementResizePoints = ([
+    minX,
+    minY,
+    maxX,
+    maxY,
+]: IBoundsCoords) => {
+    const LEFT_X = minX - 6;
+    const RIGH_X = maxX - 2;
+    const CENTER_X = (RIGH_X + LEFT_X) / 2;
+    const TOP_Y = minY - 6;
+    const BOTTOM_Y = maxY - 2;
+    const CENTER_Y = (BOTTOM_Y + TOP_Y) / 2;
+    const LEFT_TOP: IRectParameter = [LEFT_X, TOP_Y, 8, 8];
+    const LEFT: IRectParameter = [LEFT_X, CENTER_Y, 8, 8];
+    const LEFT_BOTTOM: IRectParameter = [LEFT_X, BOTTOM_Y, 8, 8];
+    const TOP: IRectParameter = [CENTER_X, TOP_Y, 8, 8];
+    const BOTTOM: IRectParameter = [CENTER_X, BOTTOM_Y, 8, 8];
+    const RIGHT_TOP: IRectParameter = [RIGH_X, TOP_Y, 8, 8];
+    const RIGHT: IRectParameter = [RIGH_X, CENTER_Y, 8, 8];
+    const RIGHT_BOTTOM: IRectParameter = [RIGH_X, BOTTOM_Y, 8, 8];
+    const TOP_ANGLE: IRectParameter = [CENTER_X, TOP_Y - 16, 8, 8];
+    return {
+        LEFT_TOP,
+        LEFT,
+        LEFT_BOTTOM,
+        TOP,
+        BOTTOM,
+        RIGHT_TOP,
+        RIGHT,
+        RIGHT_BOTTOM,
+        TOP_ANGLE,
+    };
+};
+
+export enum ELEMENT_RESIZE {
+    LEFT_TOP = "nwse-resize",
+    LEFT = "ew-resize",
+    LEFT_BOTTOM = "nesw-resize",
+    TOP = "ns-resize",
+    BOTTOM = "ns-resize",
+    RIGHT_TOP = "nesw-resize",
+    RIGHT = "ew-resize",
+    RIGHT_BOTTOM = "nwse-resize",
+    TOP_ANGLE = "grabbing"
+}
+
+/**
+ * 判断点是否在区域内
+ * @param point 
+ * @param rect 
+ * @returns 
+ */
+export const checkPointInRect = (point: IPoint, rect: IRectParameter) => {
+    const minX = rect[0];
+    const minY = rect[1];
+    const maxX = minX + 8;
+    const maxY = minY + 8;
+    const [x, y] = point;
+    return x > minX && y > minY && x < maxX && y < maxY;
+};
+
+/**
+ * 获取当前鼠标对元素的操作
+ * @param point 
+ * @param elements 
+ * @returns 
+ */
+export const getElementOption = (
+    point: IPoint,
+    element: IElement
+) => {
+    const [minX, minY, maxX, maxY] = getElementBoundsCoords(element);
+    const rect: IRect = getElementResizePoints([minX, minY, maxX, maxY]);
+    let elementOption = "";
+    for (const key in rect) {
+        if (checkPointInRect(point, rect[key])) {
+            elementOption = (ELEMENT_RESIZE as IElementOptions)[key];
+            break;
+        }
+    }
+    return elementOption;
 };

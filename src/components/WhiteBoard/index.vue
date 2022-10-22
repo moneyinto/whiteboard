@@ -55,7 +55,7 @@ const selectedElement = ref<IElement | undefined>();
 
 const cursor = computed(() => {
 	if (canvasConfig.isMoveOrScale) return "grabbing";
-	if (hoverElement.value) return "move";
+    if (canvasConfig.elementOption) return canvasConfig.elementOption;
 	return {
 		MOUSE: "default",
 		PEN: "crosshair",
@@ -74,7 +74,8 @@ const canvasConfig = reactive<ICanvasConfig>({
 	lineWidth: 5,
 	strokeColor: "#000000",
 	isDrawing: false,
-	isMoveOrScale: false
+	isMoveOrScale: false,
+    elementOption: ""
 });
 
 // 是否支持触摸

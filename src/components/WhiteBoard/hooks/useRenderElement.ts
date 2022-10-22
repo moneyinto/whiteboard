@@ -4,8 +4,9 @@ import { ICanvasConfig, IElement, IPenElement, IPoint } from "../types";
 import {
     getBoundsCoordsFromPoints,
     getElementBoundsCoords,
+    getElementResizePoints,
     getPenSvgPath,
-    getVisibleElements
+    getVisibleElements,
 } from "../utils";
 
 export default (
@@ -17,11 +18,40 @@ export default (
     const drawCheckBox = (points: IPoint[]) => {
         context.value!.save();
 
-        const [ minX, minY, maxX, maxY ] = getBoundsCoordsFromPoints(points);
+        const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(points);
         context.value!.strokeStyle = "#333";
-        context.value!.lineWidth = 2;
-        context.value!.setLineDash([3, 3]);
-        context.value!.strokeRect(minX - 4, minY - 4, maxX - minX + 8, maxY - minY + 8);
+        context.value!.lineWidth = 1;
+        context.value!.setLineDash([8, 5]);
+        context.value!.strokeRect(
+            minX - 2,
+            minY - 2,
+            maxX - minX + 4,
+            maxY - minY + 4
+        );
+
+        // 绘制九点
+        // 坐标值计算
+        const {
+            LEFT_TOP,
+            LEFT,
+            LEFT_BOTTOM,
+            TOP,
+            BOTTOM,
+            RIGHT_TOP,
+            RIGHT,
+            RIGHT_BOTTOM,
+            TOP_ANGLE,
+        } = getElementResizePoints([minX, minY, maxX, maxY]);
+        context.value!.setLineDash([0, 0]);
+        context.value!.strokeRect(...LEFT_TOP);
+        context.value!.strokeRect(...LEFT);
+        context.value!.strokeRect(...LEFT_BOTTOM);
+        context.value!.strokeRect(...TOP);
+        context.value!.strokeRect(...BOTTOM);
+        context.value!.strokeRect(...RIGHT_TOP);
+        context.value!.strokeRect(...RIGHT);
+        context.value!.strokeRect(...RIGHT_BOTTOM);
+        context.value!.strokeRect(...TOP_ANGLE);
 
         context.value!.restore();
     };
@@ -99,6 +129,6 @@ export default (
 
     return {
         renderElements,
-        renderPenElement
+        renderPenElement,
     };
 };

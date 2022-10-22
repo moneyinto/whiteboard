@@ -5,6 +5,7 @@ import {
     checkCrossElements,
     getBoundsCoordsFromPoints,
     getCanvasPointPosition,
+    getElementOption,
     getPositionElement,
     getVisibleElements,
     getWhiteBoardPointPosition,
@@ -127,6 +128,13 @@ export default (
             const normalizedCanvasHeight = canvas.value!.height / canvasConfig.zoom;
             const visibleElements = getVisibleElements(elements.value, canvasConfig.scrollX, canvasConfig.scrollY, normalizedCanvasWidth, normalizedCanvasHeight);
             hoverElement.value = getPositionElement(visibleElements, canvasConfig.zoom, x, y, selectedElement.value);
+
+            // 当元素存在时
+            canvasConfig.elementOption = hoverElement.value ? "move" : "";
+            if (selectedElement.value) {
+                const elementOption = getElementOption([ x, y ], selectedElement.value);
+                if (elementOption) canvasConfig.elementOption = elementOption;
+            }
         }
     });
 
