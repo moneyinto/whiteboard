@@ -266,36 +266,14 @@ const input = (value: number) => {
     padding: 10px 15px;
 }
 
-@keyframes slideUp {
-	0% {
-		transform: translateY(calc(100% + 200px));
-        opacity: 0;
-	}		
-	100% {
-        opacity: 1;
-		transform: translateY(0%);
-	}	
-}
-
-@keyframes slideDown {
-	0% {
-        opacity: 1;
-        transform: translateY(0%);
-	}			
-	100% {
-        opacity: 0;
-        transform: translateY(calc(100% + 200px));
-	}	
-}
-
 .wb-setting-card.open {
-    animation: slideUp 0.5s ease-in forwards;
+    animation: zoomIn 0.3s forwards;
     transition: 0.3s ease-in;
     transform-origin: 50% 0;
 }
 
 .wb-setting-card.close {
-    animation: slideDown 0.5s ease-in forwards;
+    animation: zoomOut 0.3s forwards;
     transition: 0.3s ease-in;
     transform-origin: 50% 0;
 }
