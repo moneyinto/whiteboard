@@ -40,7 +40,7 @@ export default (
             RIGHT_TOP,
             RIGHT,
             RIGHT_BOTTOM,
-            TOP_ANGLE,
+            ANGLE,
         } = getElementResizePoints([minX, minY, maxX, maxY]);
         context.value!.setLineDash([0, 0]);
         context.value!.strokeRect(...LEFT_TOP);
@@ -51,7 +51,7 @@ export default (
         context.value!.strokeRect(...RIGHT_TOP);
         context.value!.strokeRect(...RIGHT);
         context.value!.strokeRect(...RIGHT_BOTTOM);
-        context.value!.strokeRect(...TOP_ANGLE);
+        context.value!.strokeRect(...ANGLE);
 
         context.value!.restore();
     };

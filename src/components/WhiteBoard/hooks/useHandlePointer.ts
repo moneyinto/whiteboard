@@ -37,7 +37,7 @@ export default (
 
     // 获取元素操作鼠标展示光标
     const setElementOptiontMouseCursor = (x: number, y: number) => {
-        canvasConfig.elementOption = hoverElement.value ? "move" : "";
+        canvasConfig.elementOption = hoverElement.value ? "MOVE" : "";
         if (selectedElement.value) {
             const elementOption = getElementOption([ x, y ], selectedElement.value);
             if (elementOption) canvasConfig.elementOption = elementOption;
@@ -75,7 +75,7 @@ export default (
                 
                 // 选中执行元素操作
                 if (selectedElement.value) {
-                    canvasConfig.elementOption = hoverElement.value ? "move" : "";
+                    canvasConfig.elementOption = hoverElement.value ? "MOVE" : "";
                     const elementOption = getElementOption([ x, y ], selectedElement.value);
                     if (elementOption) {
                         canvasConfig.elementOption = elementOption;
@@ -96,7 +96,7 @@ export default (
 
                     // 选中了元素 未松开鼠标 执行移动操作
                     if (selectedElement.value) {
-                        canvasConfig.elementOption = "move";
+                        canvasConfig.elementOption = "MOVE";
                         canvasConfig.isElementOption = true;
                     }
                 }

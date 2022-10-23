@@ -1,5 +1,5 @@
 import { Ref } from "vue";
-import { ICanvasConfig, IElement, IPoint } from "../types";
+import { ICanvasConfig, IElement, IElementOptions, IPoint } from "../types";
 import { ELEMENT_RESIZE, getBoundsCoordsFromPoints } from "../utils";
 import useRenderElement from "./useRenderElement";
 import useUpdateElement from "./useUpdateElement";
@@ -47,12 +47,31 @@ export default (
         });
     }
 
+    /**
+     * 纵向变动
+     * @param moveY 
+     * @param originY 
+     * @returns 
+     */
+    const verticalZoom = (moveY: number, originY: number) => {
+        if (!selectedElement.value) return;
+        const oldHeight = selectedElement.value.height;
+        const newHeight = oldHeight - moveY;
+        const scaleY = newHeight / oldHeight;
+        const points = selectedElement.value.points;
+        updateElement(selectedElement.value, {
+            height: newHeight,
+            points: points.map(point => [point[0], point[1] * scaleY]),
+            y: selectedElement.value.y + originY * (1 - scaleY)
+        });
+    }
+
     const optionElement = (startPoint: IPoint | null, x: number, y: number) => {
         if (!selectedElement.value || !startPoint) return;
         const moveX = x - startPoint[0];
         const moveY = y - startPoint[1];
         const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(selectedElement.value.points);
-        switch (canvasConfig.elementOption) {
+        switch ((ELEMENT_RESIZE as IElementOptions)[canvasConfig.elementOption]) {
             case ELEMENT_RESIZE.MOVE: {
                 updateElement(selectedElement.value, {
                     x: selectedElement.value.x + moveX,
@@ -60,22 +79,50 @@ export default (
                 });
                 break;
             }
-            case ELEMENT_RESIZE.LEFT: {                
-                if (moveX > 0 && Math.sign(selectedElement.value.width) === -1) {
-                    selectedElement.value.flipX = selectedElement.value.flipX === 1 ? -1 : 1;
-                    canvasConfig.elementOption = ELEMENT_RESIZE.RIGHT;
-                } else {
-                    horizontalZoom(moveX, maxX);
+            case ELEMENT_RESIZE.LEFT:
+            case ELEMENT_RESIZE.LEFT_TOP:
+            case ELEMENT_RESIZE.LEFT_BOTTOM:
+            case ELEMENT_RESIZE.TOP:
+            case ELEMENT_RESIZE.BOTTOM:
+            case ELEMENT_RESIZE.RIGHT:
+            case ELEMENT_RESIZE.RIGHT_TOP:
+            case ELEMENT_RESIZE.RIGHT_BOTTOM: {
+                if (/LEFT/.test(canvasConfig.elementOption)) {
+                    if (moveX > 0 && Math.sign(selectedElement.value.width) === -1) {
+                        selectedElement.value.flipX = selectedElement.value.flipX === 1 ? -1 : 1;
+                        canvasConfig.elementOption = canvasConfig.elementOption.replace("LEFT", "RIGHT");
+                    } else {
+                        horizontalZoom(moveX, maxX);
+                    }
                 }
-                break;
-            }
-            case ELEMENT_RESIZE.RIGHT: {
-               if (moveX < 0 && Math.sign(selectedElement.value.width) === -1) {
-                    selectedElement.value.flipX = selectedElement.value.flipX === 1 ? -1 : 1;
-                    canvasConfig.elementOption = ELEMENT_RESIZE.LEFT;
-                } else {
-                    horizontalZoom(-moveX, minX);
+
+                if (/RIGHT/.test(canvasConfig.elementOption)) {
+                    if (moveX < 0 && Math.sign(selectedElement.value.width) === -1) {
+                        selectedElement.value.flipX = selectedElement.value.flipX === 1 ? -1 : 1;
+                        canvasConfig.elementOption = canvasConfig.elementOption.replace("RIGHT", "LEFT");
+                    } else {
+                        horizontalZoom(-moveX, minX);
+                    }
                 }
+
+                if (/TOP/.test(canvasConfig.elementOption)) {
+                    if (moveY > 0 && Math.sign(selectedElement.value.height) === -1) {
+                        selectedElement.value.flipY = selectedElement.value.flipY === 1 ? -1 : 1;
+                        canvasConfig.elementOption = canvasConfig.elementOption.replace("TOP", "BOTTOM");
+                    } else {
+                        verticalZoom(moveY, maxY);
+                    }
+                }
+
+                if (/BOTTOM/.test(canvasConfig.elementOption)) {
+                    if (moveY < 0 && Math.sign(selectedElement.value.height) === -1) {
+                        selectedElement.value.flipY = selectedElement.value.flipY === 1 ? -1 : 1;
+                        canvasConfig.elementOption = canvasConfig.elementOption.replace("BOTTOM", "TOP");
+                    } else {
+                        verticalZoom(-moveY, minY);
+                    }
+                }
+
                 break;
             }
         }

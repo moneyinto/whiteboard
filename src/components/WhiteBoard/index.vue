@@ -34,10 +34,11 @@ import useHandlePointer from "./hooks/useHandlePointer";
 import useRenderElement from "./hooks/useRenderElement";
 import useZoom from "./hooks/useZoom";
 import useClearElement from "./hooks/useClearElement";
-import { IElement, ICanvasConfig } from "./types";
+import { IElement, ICanvasConfig, IElementOptions } from "./types";
 import { OPTION_TYPE } from "./config";
 import { throttle } from "lodash";
 import db from "./utils/db";
+import { ELEMENT_RESIZE } from "./utils";
 import useHistorySnapshot from "./hooks/useHistorySnapshot";
 const canvasScale = window.devicePixelRatio;
 
@@ -55,9 +56,9 @@ const selectedElement = ref<IElement | undefined>();
 
 const cursor = computed(() => {
 	if (canvasConfig.isMoveOrScale) return "grabbing";
+    console.log(canvasConfig.elementOption)
     if (canvasConfig.elementOption) {
-        const index = canvasConfig.elementOption.indexOf("-");
-        return canvasConfig.elementOption.substring(index + 1, canvasConfig.elementOption.length);
+        return (ELEMENT_RESIZE as IElementOptions)[canvasConfig.elementOption];
     }
 	return {
 		MOUSE: "default",

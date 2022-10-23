@@ -494,7 +494,7 @@ export const getElementResizePoints = ([
     const RIGHT_TOP: IRectParameter = [RIGH_X, TOP_Y, 8, 8];
     const RIGHT: IRectParameter = [RIGH_X, CENTER_Y, 8, 8];
     const RIGHT_BOTTOM: IRectParameter = [RIGH_X, BOTTOM_Y, 8, 8];
-    const TOP_ANGLE: IRectParameter = [CENTER_X, TOP_Y - 16, 8, 8];
+    const ANGLE: IRectParameter = [CENTER_X, TOP_Y - 16, 8, 8];
     return {
         LEFT_TOP,
         LEFT,
@@ -504,20 +504,20 @@ export const getElementResizePoints = ([
         RIGHT_TOP,
         RIGHT,
         RIGHT_BOTTOM,
-        TOP_ANGLE,
+        ANGLE,
     };
 };
 
 export enum ELEMENT_RESIZE {
-    LEFT_TOP = "lt-nwse-resize",
-    LEFT = "l-ew-resize",
-    LEFT_BOTTOM = "lb-nesw-resize",
-    TOP = "t-ns-resize",
-    BOTTOM = "b-ns-resize",
-    RIGHT_TOP = "rt-nesw-resize",
-    RIGHT = "r-ew-resize",
-    RIGHT_BOTTOM = "rb-nwse-resize",
-    TOP_ANGLE = "grabbing",
+    LEFT_TOP = "nwse-resize",
+    LEFT = "ew-resize",
+    LEFT_BOTTOM = "nesw-resize",
+    TOP = "ns-resize",
+    BOTTOM = "ns-resize",
+    RIGHT_TOP = "nesw-resize",
+    RIGHT = "ew-resize",
+    RIGHT_BOTTOM = "nwse-resize",
+    ANGLE = "grabbing",
     MOVE = "move"
 }
 
@@ -551,7 +551,7 @@ export const getElementOption = (
     let elementOption = "";
     for (const key in rect) {
         if (checkPointInRect(point, rect[key])) {
-            elementOption = (ELEMENT_RESIZE as IElementOptions)[key];
+            elementOption = key;
             break;
         }
     }
