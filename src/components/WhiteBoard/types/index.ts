@@ -14,6 +14,10 @@
  * width: 元素占位宽
  *
  * height: 元素占位高
+ * 
+ * scaleX: 横向缩放
+ * 
+ * scaleY: 纵向缩放
  */
 interface IBaseElement {
     id: string;
@@ -58,6 +62,8 @@ export interface IPenElement extends IBaseElement {
  * elementOption: 对元素执行的操作 移动 旋转 拉伸
  * 
  * isElementOption: 是否对元素进行操作
+ * 
+ * isRecordElementOption: 是否需要记录对元素的操作
  */
 export interface ICanvasConfig {
     offsetX: number;
@@ -72,6 +78,7 @@ export interface ICanvasConfig {
     isMoveOrScale: boolean;
     elementOption: string;
     isElementOption: boolean;
+    isRecordElementOption: boolean;
 }
 
 export type IBoundsCoords = [number, number, number, number];

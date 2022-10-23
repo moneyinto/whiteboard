@@ -76,7 +76,8 @@ const canvasConfig = reactive<ICanvasConfig>({
 	isDrawing: false,
 	isMoveOrScale: false,
     elementOption: "",
-    isElementOption: false
+    isElementOption: false,
+    isRecordElementOption: false
 });
 
 // 是否支持触摸

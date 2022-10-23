@@ -3,7 +3,6 @@ import { OPTION_TYPE } from "../config";
 import { ICanvasConfig, IElement, IPoint } from "../types";
 import {
     checkCrossElements,
-    ELEMENT_RESIZE,
     getBoundsCoordsFromPoints,
     getCanvasPointPosition,
     getElementOption,
@@ -14,6 +13,7 @@ import {
 } from "../utils";
 import useCreateElement from "./useCreateElement";
 import useHistorySnapshot from "./useHistorySnapshot";
+import useOptionElement from "./useOptionElement";
 import useRenderElement from "./useRenderElement";
 import useUpdateElement from "./useUpdateElement";
 
@@ -30,6 +30,7 @@ export default (
     const { createPenElement } = useCreateElement(elements, canvasConfig);
     const { updateElement } = useUpdateElement();
     const { renderElements } = useRenderElement(canvas, context, canvasConfig, selectedElement);
+    const { optionElement } = useOptionElement(canvas, context, elements, canvasConfig, selectedElement);
     const { addHistorySnapshot } = useHistorySnapshot(elements, snapshotKeys, snapshotCursor);
     let targetElement: IElement | null = null;
     let startPoint: IPoint | null = null;
@@ -81,6 +82,8 @@ export default (
                     }
                     if (canvasConfig.elementOption) {
                         canvasConfig.isElementOption = true;
+                        // 更新一下选中元素，防止不能数据不能更新
+                        selectedElement.value = elements.value.find(element => element.id === selectedElement.value!.id);
                     } 
                 }
                 
@@ -160,7 +163,9 @@ export default (
 
             if (canvasConfig.isElementOption) {
                 // 执行元素操作
-                optionElement(x, y);
+                optionElement(startPoint, x, y);
+                startPoint = [x, y];
+                canvasConfig.isRecordElementOption = true;
                 return;
             }
 
@@ -176,23 +181,6 @@ export default (
             }
         }
     });
-
-    const optionElement = (x: number, y: number) => {
-        if (!selectedElement.value || !startPoint) return;
-        switch(canvasConfig.elementOption) {
-            case ELEMENT_RESIZE.MOVE: {
-                const moveX = x - startPoint[0];
-                const moveY = y - startPoint[1];
-                startPoint = [x, y];
-                updateElement(selectedElement.value, {
-                    x: selectedElement.value.x + moveX,
-                    y: selectedElement.value.y + moveY
-                });
-                break;
-            }
-        }
-        renderElements(elements.value);
-    };
 
     const drawOnCanvas = (x: number, y: number) => {
         if (!targetElement) return;
@@ -269,6 +257,10 @@ export default (
         if (canvasConfig.isElementOption) {
             const { x, y } = getCanvasPointPosition(event, canvasConfig);
             setElementOptiontMouseCursor(x, y);
+
+            if (canvasConfig.isRecordElementOption) {
+                addHistorySnapshot(elements.value);
+            }
         }
 
         canvasConfig.isElementOption = false;
