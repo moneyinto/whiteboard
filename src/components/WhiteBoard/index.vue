@@ -55,7 +55,10 @@ const selectedElement = ref<IElement | undefined>();
 
 const cursor = computed(() => {
 	if (canvasConfig.isMoveOrScale) return "grabbing";
-    if (canvasConfig.elementOption) return canvasConfig.elementOption;
+    if (canvasConfig.elementOption) {
+        const index = canvasConfig.elementOption.indexOf("-");
+        return canvasConfig.elementOption.substring(index + 1, canvasConfig.elementOption.length);
+    }
 	return {
 		MOUSE: "default",
 		PEN: "crosshair",

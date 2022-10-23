@@ -509,14 +509,14 @@ export const getElementResizePoints = ([
 };
 
 export enum ELEMENT_RESIZE {
-    LEFT_TOP = "nwse-resize",
-    LEFT = "ew-resize",
-    LEFT_BOTTOM = "nesw-resize",
-    TOP = "ns-resize",
-    BOTTOM = "ns-resize",
-    RIGHT_TOP = "nesw-resize",
-    RIGHT = "ew-resize",
-    RIGHT_BOTTOM = "nwse-resize",
+    LEFT_TOP = "lt-nwse-resize",
+    LEFT = "l-ew-resize",
+    LEFT_BOTTOM = "lb-nesw-resize",
+    TOP = "t-ns-resize",
+    BOTTOM = "b-ns-resize",
+    RIGHT_TOP = "rt-nesw-resize",
+    RIGHT = "r-ew-resize",
+    RIGHT_BOTTOM = "rb-nwse-resize",
     TOP_ANGLE = "grabbing",
     MOVE = "move"
 }
