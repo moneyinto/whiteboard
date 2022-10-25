@@ -102,7 +102,7 @@ export default (
         context.value.rotate(element.angle);
 
         // 目标实现镜像翻转
-        context.value.scale(element.flipX, element.flipY);
+        // context.value.scale(element.flipX, element.flipY);
 
         // 坐标原点移动到笔记起始位置
         context.value.translate(-shiftX, -shiftY);

@@ -1,6 +1,6 @@
 import { Ref } from "vue";
 import { ICanvasConfig, IElement, IElementOptions, IPoint } from "../types";
-import { ELEMENT_RESIZE, getBoundsCoordsFromPoints, getTargetElement } from "../utils";
+import { deepClone, ELEMENT_RESIZE, getBoundsCoordsFromPoints, getTargetElement } from "../utils";
 import useRenderElement from "./useRenderElement";
 import useUpdateElement from "./useUpdateElement";
 
@@ -34,17 +34,17 @@ export default (
      * @param originX 
      * @returns 
      */
-    const horizontalZoom = (moveX: number, originX: number) => {
+    const horizontalZoom = (moveX: number, originX: number, points: IPoint[]) => {
         if (!selectedElement.value) return;
         const oldWidth = selectedElement.value.width;
         const newWidth = oldWidth - moveX;
         const scaleX = newWidth / oldWidth;
-        const points = selectedElement.value.points;
         const optionElement = getTargetElement(selectedElement.value!.id, elements.value);
         if (optionElement) {
+            points.forEach(point => point[0] = point[0] * scaleX);
             updateElement(optionElement, {
                 width: newWidth,
-                points: points.map(point => [point[0] * scaleX, point[1]]),
+                points,
                 x: selectedElement.value.x + originX * (1 - scaleX)
             });
         }
@@ -56,17 +56,17 @@ export default (
      * @param originY 
      * @returns 
      */
-    const verticalZoom = (moveY: number, originY: number) => {
+    const verticalZoom = (moveY: number, originY: number, points: IPoint[]) => {
         if (!selectedElement.value) return;
         const oldHeight = selectedElement.value.height;
         const newHeight = oldHeight - moveY;
         const scaleY = newHeight / oldHeight;
-        const points = selectedElement.value.points;
         const optionElement = getTargetElement(selectedElement.value!.id, elements.value);
         if (optionElement) {
+            points.forEach(point => point[1] = point[1] * scaleY);
             updateElement(optionElement, {
                 height: newHeight,
-                points: points.map(point => [point[0], point[1] * scaleY]),
+                points,
                 y: selectedElement.value.y + originY * (1 - scaleY)
             });
         }
@@ -78,6 +78,7 @@ export default (
         const moveY = y - startPoint[1];
         const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(selectedElement.value.points);
         const optionElement = getTargetElement(selectedElement.value!.id, elements.value);
+        console.log(canvasConfig.elementOption);
         switch ((ELEMENT_RESIZE as IElementOptions)[canvasConfig.elementOption]) {
             case ELEMENT_RESIZE.MOVE: {
                 if (optionElement) {
@@ -96,42 +97,22 @@ export default (
             case ELEMENT_RESIZE.RIGHT:
             case ELEMENT_RESIZE.RIGHT_TOP:
             case ELEMENT_RESIZE.RIGHT_BOTTOM: {
+                const points = deepClone(selectedElement.value.points);
                 if (/LEFT/.test(canvasConfig.elementOption)) {
-                    if (moveX > 0 && Math.sign(selectedElement.value.width) === -1) {
-                        selectedElement.value.flipX = selectedElement.value.flipX === 1 ? -1 : 1;
-                        canvasConfig.elementOption = canvasConfig.elementOption.replace("LEFT", "RIGHT");
-                    } else {
-                        horizontalZoom(moveX, maxX);
-                    }
+                    horizontalZoom(moveX * Math.sign(selectedElement.value.width), maxX, points);
                 }
 
                 if (/RIGHT/.test(canvasConfig.elementOption)) {
-                    if (moveX < 0 && Math.sign(selectedElement.value.width) === -1) {
-                        selectedElement.value.flipX = selectedElement.value.flipX === 1 ? -1 : 1;
-                        canvasConfig.elementOption = canvasConfig.elementOption.replace("RIGHT", "LEFT");
-                    } else {
-                        horizontalZoom(-moveX, minX);
-                    }
+                    horizontalZoom(- moveX * Math.sign(selectedElement.value.width), minX, points);
                 }
 
                 if (/TOP/.test(canvasConfig.elementOption)) {
-                    if (moveY > 0 && Math.sign(selectedElement.value.height) === -1) {
-                        selectedElement.value.flipY = selectedElement.value.flipY === 1 ? -1 : 1;
-                        canvasConfig.elementOption = canvasConfig.elementOption.replace("TOP", "BOTTOM");
-                    } else {
-                        verticalZoom(moveY, maxY);
-                    }
+                    verticalZoom(moveY * Math.sign(selectedElement.value.height), maxY, points);
                 }
 
                 if (/BOTTOM/.test(canvasConfig.elementOption)) {
-                    if (moveY < 0 && Math.sign(selectedElement.value.height) === -1) {
-                        selectedElement.value.flipY = selectedElement.value.flipY === 1 ? -1 : 1;
-                        canvasConfig.elementOption = canvasConfig.elementOption.replace("BOTTOM", "TOP");
-                    } else {
-                        verticalZoom(-moveY, minY);
-                    }
+                    verticalZoom(- moveY * Math.sign(selectedElement.value.height), minY, points);
                 }
-
                 break;
             }
         }
