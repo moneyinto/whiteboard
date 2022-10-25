@@ -3,10 +3,12 @@ import { OPTION_TYPE } from "../config";
 import { ICanvasConfig, IElement, IPoint } from "../types";
 import {
     checkCrossElements,
+    deepClone,
     getBoundsCoordsFromPoints,
     getCanvasPointPosition,
     getElementOption,
     getPositionElement,
+    getTargetElement,
     getVisibleElements,
     getWhiteBoardPointPosition,
     throttleRAF
@@ -75,7 +77,15 @@ export default (
                 
                 // 选中执行元素操作
                 if (selectedElement.value) {
-                    canvasConfig.elementOption = hoverElement.value ? "MOVE" : "";
+                    canvasConfig.elementOption = "";
+                    if (hoverElement.value) {
+                        canvasConfig.elementOption = "MOVE";
+                        // 需要判定一下选中的元素和hover的元素是否是同一个，不是需要更新选中的元素
+                        if (selectedElement.value.id !== hoverElement.value.id) {
+                            selectedElement.value = deepClone(getTargetElement(hoverElement.value.id, elements.value));
+                        }
+                    }
+                    if (!selectedElement.value) return;
                     const elementOption = getElementOption([ x, y ], selectedElement.value, canvasConfig.zoom);
                     if (elementOption) {
                         canvasConfig.elementOption = elementOption;
@@ -83,8 +93,8 @@ export default (
                     if (canvasConfig.elementOption) {
                         canvasConfig.isElementOption = true;
                         // 更新一下选中元素，防止不能数据不能更新
-                        selectedElement.value = elements.value.find(element => element.id === selectedElement.value!.id);
-                    } 
+                        // selectedElement.value = elements.value.find(element => element.id === selectedElement.value!.id);
+                    }
                 }
                 
                 // 没有执行元素操作 下面选中某个元素
@@ -164,7 +174,6 @@ export default (
             if (canvasConfig.isElementOption) {
                 // 执行元素操作
                 optionElement(startPoint, x, y);
-                startPoint = [x, y];
                 canvasConfig.isRecordElementOption = true;
                 return;
             }
@@ -255,6 +264,8 @@ export default (
 
         // 如果在执行元素操作时松开鼠标 重新判定一下鼠标光标展示
         if (canvasConfig.isElementOption) {
+            // 更新一下选中元素
+            selectedElement.value = deepClone(getTargetElement(selectedElement.value!.id, elements.value));
             const { x, y } = getCanvasPointPosition(event, canvasConfig);
             setElementOptiontMouseCursor(x, y);
 

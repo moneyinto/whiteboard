@@ -1,6 +1,6 @@
 import { Ref } from "vue";
 import { ICanvasConfig, IElement, IElementOptions, IPoint } from "../types";
-import { ELEMENT_RESIZE, getBoundsCoordsFromPoints } from "../utils";
+import { ELEMENT_RESIZE, getBoundsCoordsFromPoints, getTargetElement } from "../utils";
 import useRenderElement from "./useRenderElement";
 import useUpdateElement from "./useUpdateElement";
 
@@ -40,11 +40,14 @@ export default (
         const newWidth = oldWidth - moveX;
         const scaleX = newWidth / oldWidth;
         const points = selectedElement.value.points;
-        updateElement(selectedElement.value, {
-            width: newWidth,
-            points: points.map(point => [point[0] * scaleX, point[1]]),
-            x: selectedElement.value.x + originX * (1 - scaleX)
-        });
+        const optionElement = getTargetElement(selectedElement.value!.id, elements.value);
+        if (optionElement) {
+            updateElement(optionElement, {
+                width: newWidth,
+                points: points.map(point => [point[0] * scaleX, point[1]]),
+                x: selectedElement.value.x + originX * (1 - scaleX)
+            });
+        }
     }
 
     /**
@@ -59,11 +62,14 @@ export default (
         const newHeight = oldHeight - moveY;
         const scaleY = newHeight / oldHeight;
         const points = selectedElement.value.points;
-        updateElement(selectedElement.value, {
-            height: newHeight,
-            points: points.map(point => [point[0], point[1] * scaleY]),
-            y: selectedElement.value.y + originY * (1 - scaleY)
-        });
+        const optionElement = getTargetElement(selectedElement.value!.id, elements.value);
+        if (optionElement) {
+            updateElement(optionElement, {
+                height: newHeight,
+                points: points.map(point => [point[0], point[1] * scaleY]),
+                y: selectedElement.value.y + originY * (1 - scaleY)
+            });
+        }
     }
 
     const optionElement = (startPoint: IPoint | null, x: number, y: number) => {
@@ -71,12 +77,15 @@ export default (
         const moveX = x - startPoint[0];
         const moveY = y - startPoint[1];
         const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(selectedElement.value.points);
+        const optionElement = getTargetElement(selectedElement.value!.id, elements.value);
         switch ((ELEMENT_RESIZE as IElementOptions)[canvasConfig.elementOption]) {
             case ELEMENT_RESIZE.MOVE: {
-                updateElement(selectedElement.value, {
-                    x: selectedElement.value.x + moveX,
-                    y: selectedElement.value.y + moveY,
-                });
+                if (optionElement) {
+                    updateElement(optionElement, {
+                        x: selectedElement.value.x + moveX,
+                        y: selectedElement.value.y + moveY,
+                    });
+                }
                 break;
             }
             case ELEMENT_RESIZE.LEFT:

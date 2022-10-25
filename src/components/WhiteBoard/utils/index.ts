@@ -4,11 +4,14 @@ import {
     IBoundsCoords,
     ICanvasConfig,
     IElement,
-    IElementOptions,
     IPoint,
     IRects,
     IRectParameter,
 } from "../types";
+
+export const deepClone = (obj: unknown) => {
+    return JSON.parse(JSON.stringify(obj));
+};
 
 /**
  * 生成随机码
@@ -466,7 +469,8 @@ export const getPositionElement = (
             if (hoverElement) break;
         }
     }
-    return hoverElement;
+    
+    return hoverElement ? deepClone(hoverElement) as IElement : undefined;
 };
 
 /**
@@ -563,4 +567,14 @@ export const getElementOption = (
         }
     }
     return elementOption;
+};
+
+/**
+ * 获取目标元素
+ * @param id 
+ * @param elements 
+ * @returns 
+ */
+export const getTargetElement = (id: string, elements: IElement[]) => {
+    return elements.find(element => element.id === id);
 };

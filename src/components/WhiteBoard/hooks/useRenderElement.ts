@@ -2,10 +2,10 @@ import { Ref } from "vue";
 import { OPTION_TYPE } from "../config";
 import { IBoundsCoords, ICanvasConfig, IElement, IPenElement, IPoint, IRects } from "../types";
 import {
-    getBoundsCoordsFromPoints,
     getElementBoundsCoords,
     getElementResizePoints,
     getPenSvgPath,
+    getTargetElement,
     getVisibleElements,
 } from "../utils";
 
@@ -32,7 +32,6 @@ export default (
         );
 
         const [minX, minY, maxX, maxY] = getElementBoundsCoords(element);
-        // const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(element.points);
         const elementWidth = maxX - minX;
         const elementHeight = maxY - minY;
         const dashedLinePadding = 4 / canvasConfig.zoom;
@@ -61,15 +60,6 @@ export default (
         for (const key in rects) {
             drawCheckBoxRect(rects[key]);
         }
-        // context.value.strokeRect(...LEFT_TOP);
-        // context.value.strokeRect(...LEFT);
-        // context.value.strokeRect(...LEFT_BOTTOM);
-        // context.value.strokeRect(...TOP);
-        // context.value.strokeRect(...BOTTOM);
-        // context.value.strokeRect(...RIGHT_TOP);
-        // context.value.strokeRect(...RIGHT);
-        // context.value.strokeRect(...RIGHT_BOTTOM);
-        // context.value.strokeRect(...ANGLE);
 
         // 移动坐标系原点
         context.value.translate(cx, cy);
@@ -154,7 +144,10 @@ export default (
 
         // 绘制选中框
         if (selectedElement.value) {
-            drawCheckBox(selectedElement.value);
+            const targetElement = getTargetElement(selectedElement.value!.id, elements);
+            if (targetElement) {
+                drawCheckBox(targetElement);
+            }
         }
     };
 
