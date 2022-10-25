@@ -14,14 +14,6 @@
  * width: 元素占位宽
  *
  * height: 元素占位高
- * 
- * scaleX: 横向缩放
- * 
- * scaleY: 纵向缩放
- * 
- * flipX: 横向翻转
- * 
- * flipY: 纵向翻转
  */
 interface IBaseElement {
     id: string;
@@ -33,8 +25,6 @@ interface IBaseElement {
     y: number;
     width: number;
     height: number;
-    flipX: 1 | -1,
-    flipY: 1 | -1,
     [key: string]: unknown;
 }
 
