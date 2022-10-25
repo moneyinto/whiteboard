@@ -6,7 +6,7 @@ import {
     IElement,
     IElementOptions,
     IPoint,
-    IRect,
+    IRects,
     IRectParameter,
 } from "../types";
 
@@ -474,27 +474,29 @@ export const getPositionElement = (
  * @param param0 获取选中区域的九点区域坐标
  * @returns
  */
-export const getElementResizePoints = ([
-    minX,
-    minY,
-    maxX,
-    maxY,
-]: IBoundsCoords) => {
-    const LEFT_X = minX - 6;
-    const RIGH_X = maxX - 2;
+export const getElementResizePoints = (
+    x: number,
+    y: number,
+    elementWidth: number,
+    elementHeight: number,
+    dashedLinePadding: number,
+    resizeRectWidth: number
+) => {
+    const LEFT_X = x - dashedLinePadding - resizeRectWidth;
+    const RIGH_X = x + elementWidth + dashedLinePadding;
     const CENTER_X = (RIGH_X + LEFT_X) / 2;
-    const TOP_Y = minY - 6;
-    const BOTTOM_Y = maxY - 2;
+    const TOP_Y = y - dashedLinePadding - resizeRectWidth;
+    const BOTTOM_Y = y + elementHeight + dashedLinePadding;
     const CENTER_Y = (BOTTOM_Y + TOP_Y) / 2;
-    const LEFT_TOP: IRectParameter = [LEFT_X, TOP_Y, 8, 8];
-    const LEFT: IRectParameter = [LEFT_X, CENTER_Y, 8, 8];
-    const LEFT_BOTTOM: IRectParameter = [LEFT_X, BOTTOM_Y, 8, 8];
-    const TOP: IRectParameter = [CENTER_X, TOP_Y, 8, 8];
-    const BOTTOM: IRectParameter = [CENTER_X, BOTTOM_Y, 8, 8];
-    const RIGHT_TOP: IRectParameter = [RIGH_X, TOP_Y, 8, 8];
-    const RIGHT: IRectParameter = [RIGH_X, CENTER_Y, 8, 8];
-    const RIGHT_BOTTOM: IRectParameter = [RIGH_X, BOTTOM_Y, 8, 8];
-    const ANGLE: IRectParameter = [CENTER_X, TOP_Y - 16, 8, 8];
+    const LEFT_TOP: IRectParameter = [LEFT_X, TOP_Y, resizeRectWidth, resizeRectWidth];
+    const LEFT: IRectParameter = [LEFT_X, CENTER_Y, resizeRectWidth, resizeRectWidth];
+    const LEFT_BOTTOM: IRectParameter = [LEFT_X, BOTTOM_Y, resizeRectWidth, resizeRectWidth];
+    const TOP: IRectParameter = [CENTER_X, TOP_Y, resizeRectWidth, resizeRectWidth];
+    const BOTTOM: IRectParameter = [CENTER_X, BOTTOM_Y, resizeRectWidth, resizeRectWidth];
+    const RIGHT_TOP: IRectParameter = [RIGH_X, TOP_Y, resizeRectWidth, resizeRectWidth];
+    const RIGHT: IRectParameter = [RIGH_X, CENTER_Y, resizeRectWidth, resizeRectWidth];
+    const RIGHT_BOTTOM: IRectParameter = [RIGH_X, BOTTOM_Y, resizeRectWidth, resizeRectWidth];
+    const ANGLE: IRectParameter = [CENTER_X, TOP_Y - resizeRectWidth * 2, resizeRectWidth, resizeRectWidth];
     return {
         LEFT_TOP,
         LEFT,
@@ -527,11 +529,11 @@ export enum ELEMENT_RESIZE {
  * @param rect 
  * @returns 
  */
-export const checkPointInRect = (point: IPoint, rect: IRectParameter) => {
+export const checkPointInRect = (point: IPoint, rect: IRectParameter, rectWidth: number) => {
     const minX = rect[0];
     const minY = rect[1];
-    const maxX = minX + 8;
-    const maxY = minY + 8;
+    const maxX = minX + rectWidth;
+    const maxY = minY + rectWidth;
     const [x, y] = point;
     return x > minX && y > minY && x < maxX && y < maxY;
 };
@@ -544,13 +546,18 @@ export const checkPointInRect = (point: IPoint, rect: IRectParameter) => {
  */
 export const getElementOption = (
     point: IPoint,
-    element: IElement
+    element: IElement,
+    zoom: number
 ) => {
     const [minX, minY, maxX, maxY] = getElementBoundsCoords(element);
-    const rect: IRect = getElementResizePoints([minX, minY, maxX, maxY]);
+    const elementWidth = maxX - minX;
+    const elementHeight = maxY - minY;
+    const dashedLinePadding = 4 / zoom;
+    const rectWidth = 8 / zoom;
+    const rect: IRects = getElementResizePoints(minX, minY, elementWidth, elementHeight, dashedLinePadding, rectWidth);
     let elementOption = "";
     for (const key in rect) {
-        if (checkPointInRect(point, rect[key])) {
+        if (checkPointInRect(point, rect[key], rectWidth)) {
             elementOption = key;
             break;
         }

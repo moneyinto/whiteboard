@@ -56,7 +56,6 @@ const selectedElement = ref<IElement | undefined>();
 
 const cursor = computed(() => {
 	if (canvasConfig.isMoveOrScale) return "grabbing";
-    console.log(canvasConfig.elementOption)
     if (canvasConfig.elementOption) {
         return (ELEMENT_RESIZE as IElementOptions)[canvasConfig.elementOption];
     }

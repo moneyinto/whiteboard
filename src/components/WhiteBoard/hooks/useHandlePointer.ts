@@ -39,7 +39,7 @@ export default (
     const setElementOptiontMouseCursor = (x: number, y: number) => {
         canvasConfig.elementOption = hoverElement.value ? "MOVE" : "";
         if (selectedElement.value) {
-            const elementOption = getElementOption([ x, y ], selectedElement.value);
+            const elementOption = getElementOption([ x, y ], selectedElement.value, canvasConfig.zoom);
             if (elementOption) canvasConfig.elementOption = elementOption;
         }
     };
@@ -76,7 +76,7 @@ export default (
                 // 选中执行元素操作
                 if (selectedElement.value) {
                     canvasConfig.elementOption = hoverElement.value ? "MOVE" : "";
-                    const elementOption = getElementOption([ x, y ], selectedElement.value);
+                    const elementOption = getElementOption([ x, y ], selectedElement.value, canvasConfig.zoom);
                     if (elementOption) {
                         canvasConfig.elementOption = elementOption;
                     }
