@@ -37,35 +37,35 @@ export default (
         const dashedLinePadding = 4 / canvasConfig.zoom;
         const dashWidth = 8 / canvasConfig.zoom;
         const spaceWidth = 4 / canvasConfig.zoom;
-        const cx = (minX + maxX) / 2;
-        const cy = (minY + maxY) / 2;
-
-        // 平移坐标原点
-        context.value.translate(canvasConfig.scrollX, canvasConfig.scrollY);
-        
-        context.value.strokeStyle = "#333";
-        context.value.lineWidth = 1 / canvasConfig.zoom;
-        context.value.setLineDash([dashWidth, spaceWidth]);
-        context.value.strokeRect(
-            minX - dashedLinePadding,
-            minY - dashedLinePadding,
-            elementWidth + dashedLinePadding * 2,
-            elementHeight + dashedLinePadding * 2
-        );
-
-        // 绘制九点
-        // 坐标值计算
-        const rects: IRects = getElementResizePoints(minX, minY, elementWidth, elementHeight, dashedLinePadding, dashWidth);
-        context.value.setLineDash([0, 0]);
-        for (const key in rects) {
-            drawCheckBoxRect(rects[key]);
-        }
+        const cx = (minX + maxX) / 2 + canvasConfig.scrollX;
+        const cy = (minY + maxY) / 2 + canvasConfig.scrollY;
 
         // 移动坐标系原点
         context.value.translate(cx, cy);
 
         // 目标旋转对应的角度
         context.value.rotate(element.angle);
+
+        // 平移坐标原点
+        // context.value.translate(canvasConfig.scrollX, canvasConfig.scrollY);
+        
+        context.value.strokeStyle = "#333";
+        context.value.lineWidth = 1 / canvasConfig.zoom;
+        context.value.setLineDash([dashWidth, spaceWidth]);
+        context.value.strokeRect(
+            - elementWidth / 2 - dashedLinePadding,
+            - elementHeight / 2 - dashedLinePadding,
+            elementWidth + dashedLinePadding * 2,
+            elementHeight + dashedLinePadding * 2
+        );
+
+        // 绘制九点
+        // 坐标值计算
+        const rects: IRects = getElementResizePoints(- elementWidth / 2, - elementHeight / 2, elementWidth, elementHeight, dashedLinePadding, dashWidth);
+        context.value.setLineDash([0, 0]);
+        for (const key in rects) {
+            drawCheckBoxRect(rects[key]);
+        }
 
         context.value.restore();
     };

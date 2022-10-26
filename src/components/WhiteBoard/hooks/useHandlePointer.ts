@@ -92,8 +92,6 @@ export default (
                     }
                     if (canvasConfig.elementOption) {
                         canvasConfig.isElementOption = true;
-                        // 更新一下选中元素，防止不能数据不能更新
-                        // selectedElement.value = elements.value.find(element => element.id === selectedElement.value!.id);
                     }
                 }
                 

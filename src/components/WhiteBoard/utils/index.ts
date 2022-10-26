@@ -135,6 +135,18 @@ export const getBoundsCoordsFromPoints = (points: IPoint[]): IBoundsCoords => {
 };
 
 /**
+ * 获取元素中心点在canvas中的坐标
+ * @param element
+ * @returns
+ */
+export const getElementCenterOnCanvas = (element: IElement) => {
+    const [minX, minY, maxX, maxY] = getElementBoundsCoords(element);
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    return { centerX, centerY };
+};
+
+/**
  * 获取元素形成矩形最小坐标位置及最大坐标位置
  * @param element
  */
@@ -316,15 +328,15 @@ export const checkCrossElements = (
                 const D = [x, y];
                 // 以A为起点 向量AC AB AD -> 证明 C D 点 在AB两边
                 // 向量AB AC AD
-                const AB = [B[0] - A[0], B[1] - A[1]];
-                const AC = [C[0] - A[0], C[1] - A[1]];
-                const AD = [D[0] - A[0], D[1] - A[1]];
+                const AB: IPoint = [B[0] - A[0], B[1] - A[1]];
+                const AC: IPoint = [C[0] - A[0], C[1] - A[1]];
+                const AD: IPoint = [D[0] - A[0], D[1] - A[1]];
 
                 // 以C为起点 向量 CD CA CB -> 证明 A B 点 在CD两边
                 // 向量 CD CA CB
-                const CA = [A[0] - C[0], A[1] - C[1]];
-                const CB = [B[0] - C[0], B[1] - C[1]];
-                const CD = [D[0] - C[0], D[1] - C[1]];
+                const CA: IPoint = [A[0] - C[0], A[1] - C[1]];
+                const CB: IPoint = [B[0] - C[0], B[1] - C[1]];
+                const CD: IPoint = [D[0] - C[0], D[1] - C[1]];
 
                 // 向量叉乘 一正一负 证明则成立
                 if (
@@ -421,11 +433,14 @@ export const getPositionElement = (
     for (const element of elements) {
         // 对可视区域元素进行进一步的过滤 降低计算
         const [minX, minY, maxX, maxY] = getElementBoundsCoords(element);
-        if (x > minX && x < maxX && y > minY && y < maxY) {
+        const cx = (minX + maxX) / 2;
+        const cy = (minY + maxY) / 2;
+        const [nx, ny] = rotate(x, y, cx, cy, -element.angle);
+        if (nx > minX && nx < maxX && ny > minY && ny < maxY) {
             // 符合条件的元素（线条）进行进一步判断
             const mousePoint = {
-                x: x - element.x,
-                y: y - element.y,
+                x: nx - element.x,
+                y: ny - element.y,
             };
 
             if (selectedElement && selectedElement.id === element.id) {
@@ -469,8 +484,8 @@ export const getPositionElement = (
             if (hoverElement) break;
         }
     }
-    
-    return hoverElement ? deepClone(hoverElement) as IElement : undefined;
+
+    return hoverElement ? (deepClone(hoverElement) as IElement) : undefined;
 };
 
 /**
@@ -492,15 +507,61 @@ export const getElementResizePoints = (
     const TOP_Y = y - dashedLinePadding - resizeRectWidth;
     const BOTTOM_Y = y + elementHeight + dashedLinePadding;
     const CENTER_Y = (BOTTOM_Y + TOP_Y) / 2;
-    const LEFT_TOP: IRectParameter = [LEFT_X, TOP_Y, resizeRectWidth, resizeRectWidth];
-    const LEFT: IRectParameter = [LEFT_X, CENTER_Y, resizeRectWidth, resizeRectWidth];
-    const LEFT_BOTTOM: IRectParameter = [LEFT_X, BOTTOM_Y, resizeRectWidth, resizeRectWidth];
-    const TOP: IRectParameter = [CENTER_X, TOP_Y, resizeRectWidth, resizeRectWidth];
-    const BOTTOM: IRectParameter = [CENTER_X, BOTTOM_Y, resizeRectWidth, resizeRectWidth];
-    const RIGHT_TOP: IRectParameter = [RIGH_X, TOP_Y, resizeRectWidth, resizeRectWidth];
-    const RIGHT: IRectParameter = [RIGH_X, CENTER_Y, resizeRectWidth, resizeRectWidth];
-    const RIGHT_BOTTOM: IRectParameter = [RIGH_X, BOTTOM_Y, resizeRectWidth, resizeRectWidth];
-    const ANGLE: IRectParameter = [CENTER_X, TOP_Y - resizeRectWidth * 2, resizeRectWidth, resizeRectWidth];
+
+    const LEFT_TOP: IRectParameter = [
+        LEFT_X,
+        TOP_Y,
+        resizeRectWidth,
+        resizeRectWidth,
+    ];
+    const LEFT: IRectParameter = [
+        LEFT_X,
+        CENTER_Y,
+        resizeRectWidth,
+        resizeRectWidth,
+    ];
+    const LEFT_BOTTOM: IRectParameter = [
+        LEFT_X,
+        BOTTOM_Y,
+        resizeRectWidth,
+        resizeRectWidth,
+    ];
+    const TOP: IRectParameter = [
+        CENTER_X,
+        TOP_Y,
+        resizeRectWidth,
+        resizeRectWidth,
+    ];
+    const BOTTOM: IRectParameter = [
+        CENTER_X,
+        BOTTOM_Y,
+        resizeRectWidth,
+        resizeRectWidth,
+    ];
+    const RIGHT_TOP: IRectParameter = [
+        RIGH_X,
+        TOP_Y,
+        resizeRectWidth,
+        resizeRectWidth,
+    ];
+    const RIGHT: IRectParameter = [
+        RIGH_X,
+        CENTER_Y,
+        resizeRectWidth,
+        resizeRectWidth,
+    ];
+    const RIGHT_BOTTOM: IRectParameter = [
+        RIGH_X,
+        BOTTOM_Y,
+        resizeRectWidth,
+        resizeRectWidth,
+    ];
+    const ANGLE: IRectParameter = [
+        CENTER_X,
+        TOP_Y - resizeRectWidth * 2,
+        resizeRectWidth,
+        resizeRectWidth,
+    ];
     return {
         LEFT_TOP,
         LEFT,
@@ -524,29 +585,80 @@ export enum ELEMENT_RESIZE {
     RIGHT = "ew-resize",
     RIGHT_BOTTOM = "nwse-resize",
     ANGLE = "grabbing",
-    MOVE = "move"
+    MOVE = "move",
 }
+
+// 计算 |p1 p2| X |p1 p|
+export const getCross = (p1: IPoint, p2: IPoint, p: IPoint) => {
+    return (p2[0] - p1[0]) * (p[1] - p1[1]) - (p[0] - p1[0]) * (p2[1] - p1[1]);
+};
 
 /**
  * 判断点是否在区域内
- * @param point 
- * @param rect 
- * @returns 
+ * @param point
+ * @param rect
+ * @returns
  */
-export const checkPointInRect = (point: IPoint, rect: IRectParameter, rectWidth: number) => {
+export const checkPointInRect = (
+    point: IPoint,
+    rect: IRectParameter,
+    cx: number,
+    cy: number,
+    angle: number
+) => {
+    // 方案一
+    // 当元素存在旋转的时候
+    // 处理矩形区域的旋转后的四个点
+    // 判断鼠标触摸点是否在旋转后的矩形区域内
+    /**
+     * A-----------------------B
+     * |                       |
+     * |                       |
+     * |        E              |
+     * |                       | 
+     * D-----------------------C
+     * 
+     * 只要判断(AB X AE ) * (CD X CE) >= 0 就说明E在AD和BC中间夹着
+     * 同理(DA X DE ) * (BC X BE) >= 0 计算另两边AB, CD就可以了
+     * 即(AB X AE ) * (CD X CE)  >= 0 && (DA X DE ) * (BC X BE) >= 0，则该点在矩形区域内
+     */
+    // const rw = rect[2];
+    // const rh = rect[3];
+    // const p1 = [rect[0], rect[1]];
+    // const p2 = [rect[0] + rw, rect[1]];
+    // const p3 = [rect[0], rect[1] + rh];
+    // const p4 = [rect[0] + rw, rect[1] + rh];
+    // const tp1 = rotate(p1[0], p1[1], cx, cy, angle);
+    // const tp2 = rotate(p2[0], p2[1], cx, cy, angle);
+    // const tp3 = rotate(p3[0], p3[1], cx, cy, angle);
+    // const tp4 = rotate(p4[0], p4[1], cx, cy, angle);
+    // return (
+    //     getCross(tp1, tp2, point) * getCross(tp4, tp3, point) >= 0 &&
+    //     getCross(tp2, tp4, point) * getCross(tp3, tp1, point) >= 0
+    // );
+    // 方案二
+    // 当元素存在旋转的时候
+    // 不处理矩形区域的旋转后的四个点
+    // 逆向思维 逆向旋转鼠标触摸点
+    // 判断逆向旋转鼠标触摸点是否在矩形区域内
+    const translatePoint = rotate(point[0], point[1], cx, cy, -angle);
     const minX = rect[0];
+    const maxX = rect[0] + rect[2];
     const minY = rect[1];
-    const maxX = minX + rectWidth;
-    const maxY = minY + rectWidth;
-    const [x, y] = point;
-    return x > minX && y > minY && x < maxX && y < maxY;
+    const maxY = rect[1] + rect[3];
+    return (
+        translatePoint[0] > minX &&
+        translatePoint[0] < maxX &&
+        translatePoint[1] > minY &&
+        translatePoint[1] < maxY
+    );
 };
 
 /**
  * 获取当前鼠标对元素的操作
- * @param point 
- * @param elements 
- * @returns 
+ * @param point
+ * @param elements
+ * @returns
  */
 export const getElementOption = (
     point: IPoint,
@@ -558,10 +670,19 @@ export const getElementOption = (
     const elementHeight = maxY - minY;
     const dashedLinePadding = 4 / zoom;
     const rectWidth = 8 / zoom;
-    const rect: IRects = getElementResizePoints(minX, minY, elementWidth, elementHeight, dashedLinePadding, rectWidth);
+    const rects: IRects = getElementResizePoints(
+        minX,
+        minY,
+        elementWidth,
+        elementHeight,
+        dashedLinePadding,
+        rectWidth
+    );
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
     let elementOption = "";
-    for (const key in rect) {
-        if (checkPointInRect(point, rect[key], rectWidth)) {
+    for (const key in rects) {
+        if (checkPointInRect(point, rects[key], cx, cy, element.angle)) {
             elementOption = key;
             break;
         }
@@ -571,10 +692,47 @@ export const getElementOption = (
 
 /**
  * 获取目标元素
- * @param id 
- * @param elements 
- * @returns 
+ * @param id
+ * @param elements
+ * @returns
  */
 export const getTargetElement = (id: string, elements: IElement[]) => {
-    return elements.find(element => element.id === id);
+    return elements.find((element) => element.id === id);
+};
+
+/**
+ * 角度计算（将角度转换成0-360）
+ * @param angle
+ * @returns
+ */
+export const normalizeAngle = (angle: number): number => {
+    if (angle >= 2 * Math.PI) {
+        return angle - 2 * Math.PI;
+    }
+    return angle;
+};
+
+/**
+ * 旋转坐标点
+ * @param x1
+ * @param y1
+ * @param x2
+ * @param y2
+ * @param angle
+ * @returns
+ */
+export const rotate = (
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    angle: number
+): IPoint => {
+    // 𝑎′𝑥=(𝑎𝑥−𝑐𝑥)cos𝜃−(𝑎𝑦−𝑐𝑦)sin𝜃+𝑐𝑥
+    // 𝑎′𝑦=(𝑎𝑥−𝑐𝑥)sin𝜃+(𝑎𝑦−𝑐𝑦)cos𝜃+𝑐𝑦.
+    // https://math.stackexchange.com/questions/2204520/how-do-i-rotate-a-line-segment-in-a-specific-point-on-the-line
+    return [
+        (x1 - x2) * Math.cos(angle) - (y1 - y2) * Math.sin(angle) + x2,
+        (x1 - x2) * Math.sin(angle) + (y1 - y2) * Math.cos(angle) + y2,
+    ];
 };

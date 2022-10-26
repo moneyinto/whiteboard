@@ -1,6 +1,6 @@
 import { Ref } from "vue";
 import { ICanvasConfig, IElement, IElementOptions, IPoint } from "../types";
-import { deepClone, ELEMENT_RESIZE, getBoundsCoordsFromPoints, getTargetElement } from "../utils";
+import { deepClone, ELEMENT_RESIZE, getBoundsCoordsFromPoints, getElementCenterOnCanvas, getTargetElement, normalizeAngle } from "../utils";
 import useRenderElement from "./useRenderElement";
 import useUpdateElement from "./useUpdateElement";
 
@@ -78,13 +78,24 @@ export default (
         const moveY = y - startPoint[1];
         const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(selectedElement.value.points);
         const optionElement = getTargetElement(selectedElement.value!.id, elements.value);
-        console.log(canvasConfig.elementOption);
         switch ((ELEMENT_RESIZE as IElementOptions)[canvasConfig.elementOption]) {
             case ELEMENT_RESIZE.MOVE: {
                 if (optionElement) {
                     updateElement(optionElement, {
                         x: selectedElement.value.x + moveX,
                         y: selectedElement.value.y + moveY,
+                    });
+                }
+                break;
+            }
+            case ELEMENT_RESIZE.ANGLE: {
+                if (optionElement) {
+                    const { centerX, centerY } = getElementCenterOnCanvas(selectedElement.value);
+                    const startAngle = Math.atan2(startPoint[1] - centerY, startPoint[0] - centerX);
+                    const changeAngle = Math.atan2(y - centerY, x - centerX) - startAngle;
+                    const angle = normalizeAngle(selectedElement.value.angle + changeAngle);
+                    updateElement(optionElement, {
+                        angle
                     });
                 }
                 break;

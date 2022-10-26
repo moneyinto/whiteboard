@@ -30,7 +30,7 @@ interface IBaseElement {
 
 export type IElement = IPenElement;
 
-export type IPoint = number[];
+export type IPoint = [number, number];
 
 export interface IPenElement extends IBaseElement {
     points: IPoint[];
