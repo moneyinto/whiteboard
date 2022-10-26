@@ -1,6 +1,6 @@
 import { Ref } from "vue";
 import { ICanvasConfig, IElement, IElementOptions, IPoint } from "../types";
-import { deepClone, ELEMENT_RESIZE, getBoundsCoordsFromPoints, getElementCenterOnCanvas, getTargetElement, normalizeAngle } from "../utils";
+import { deepClone, ELEMENT_RESIZE, getBoundsCoordsFromPoints, getElementCenterOnCanvas, getTargetElement, normalizeAngle, rotate } from "../utils";
 import useRenderElement from "./useRenderElement";
 import useUpdateElement from "./useUpdateElement";
 
@@ -40,12 +40,24 @@ export default (
         const newWidth = oldWidth - moveX;
         const scaleX = newWidth / oldWidth;
         const optionElement = getTargetElement(selectedElement.value!.id, elements.value);
+        const { centerX, centerY } = getElementCenterOnCanvas(selectedElement.value);
+        const { x, y } = selectedElement.value;
+        const angle = selectedElement.value.angle;
+        const [tx, ty] = rotate(x, y, centerX, centerY, angle);
+        const originOffset = originX * (scaleX - 1);
+        const centerOffset = (newWidth - oldWidth) / 2
+        const tx1 = tx - originOffset * Math.cos(angle);
+        const ty1 = ty - originOffset * Math.sin(angle);
+        const cx = centerX - centerOffset * Math.cos(angle);
+        const cy = centerY - centerOffset * Math.sin(angle);
+        const [otx, oty] = rotate(tx1, ty1, cx, cy, -angle);
         if (optionElement) {
             points.forEach(point => point[0] = point[0] * scaleX);
             updateElement(optionElement, {
                 width: newWidth,
                 points,
-                x: selectedElement.value.x + originX * (1 - scaleX)
+                x: otx,
+                y: oty
             });
         }
     }
