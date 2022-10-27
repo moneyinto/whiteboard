@@ -135,13 +135,13 @@ nextTick(async () => {
 	window.addEventListener("keyup", watchKeyUp);
 
 	if (canTouch) {
-		canvas.value.addEventListener("touchstart", handleDown);
-		canvas.value.addEventListener("touchmove", handleMove);
-		canvas.value.addEventListener("touchend", handleUp);
+		window.addEventListener("touchstart", handleDown);
+		window.addEventListener("touchmove", handleMove);
+		window.addEventListener("touchend", handleUp);
 	} else {
-		canvas.value.addEventListener("pointerdown", handleDown);
-		canvas.value.addEventListener("pointermove", handleMove);
-		canvas.value.addEventListener("pointerup", handleUp);
+		window.addEventListener("pointerdown", handleDown);
+		window.addEventListener("pointermove", handleMove);
+		window.addEventListener("pointerup", handleUp);
 	}
 
 	// 区域大小变化重置canvas
@@ -169,13 +169,13 @@ onUnmounted(() => {
 	window.removeEventListener("keydown", watchKeyDown);
 	window.removeEventListener("keyup", watchKeyUp);
 	if (canTouch) {
-		canvas.value?.removeEventListener("touchstart", handleDown);
-		canvas.value?.removeEventListener("touchmove", handleMove);
-		canvas.value?.removeEventListener("touchend", handleUp);
+		window.removeEventListener("touchstart", handleDown);
+		window.removeEventListener("touchmove", handleMove);
+		window.removeEventListener("touchend", handleUp);
 	} else {
-		canvas.value?.removeEventListener("pointerdown", handleDown);
-		canvas.value?.removeEventListener("pointermove", handleMove);
-		canvas.value?.removeEventListener("pointerup", handleUp);
+		window.removeEventListener("pointerdown", handleDown);
+		window.removeEventListener("pointermove", handleMove);
+		window.removeEventListener("pointerup", handleUp);
 	}
 });
 </script>
