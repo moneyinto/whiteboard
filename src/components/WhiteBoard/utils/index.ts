@@ -141,9 +141,9 @@ export const getBoundsCoordsFromPoints = (points: IPoint[]): IBoundsCoords => {
  */
 export const getElementCenterOnCanvas = (element: IElement) => {
     const [minX, minY, maxX, maxY] = getElementBoundsCoords(element);
-    const centerX = (minX + maxX) / 2;
-    const centerY = (minY + maxY) / 2;
-    return { centerX, centerY };
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    return { cx, cy, minX, minY, maxX, maxY };
 };
 
 /**

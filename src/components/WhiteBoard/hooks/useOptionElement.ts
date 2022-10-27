@@ -26,31 +26,64 @@ export default (
      * 缩放比例为 scale
      * 拖拽左边时，左边框正式变化了坐标轴左边的部分
      * 为了保持元素右边位置不变，需要将元素进行左右平移，平移距离为坐标轴右边变化大小
+     * 
+     * 旋转处理
     */
 
     /**
      * 横向变动
-     * @param moveX 
+     * @param mx 
+     * @param my 
+     * @param sx 
+     * @param sy 
+     * @param direction 
      * @param originX 
+     * @param points 
+     * @param optionElement 
      * @returns 
      */
-    const horizontalZoom = (moveX: number, originX: number, points: IPoint[]) => {
-        if (!selectedElement.value) return;
-        const oldWidth = selectedElement.value.width;
-        const newWidth = oldWidth - moveX;
-        const scaleX = newWidth / oldWidth;
-        const optionElement = getTargetElement(selectedElement.value!.id, elements.value);
-        const { centerX, centerY } = getElementCenterOnCanvas(selectedElement.value);
-        const { x, y } = selectedElement.value;
+    const horizontalZoom = (mx: number, my: number, sx: number, sy: number, direction: number, originX: number, points: IPoint[], optionElement?: IElement) => {
+        if (!selectedElement.value || !optionElement) return;
+        const oldWidth = Math.abs(selectedElement.value.width);
         const angle = selectedElement.value.angle;
-        const [tx, ty] = rotate(x, y, centerX, centerY, angle);
-        const originOffset = originX * (scaleX - 1);
+
+        // 在sx,sy以x轴平行的线段上取任意一点 绕sx，sy旋转angle
+        const nPoint = [sx - 10, sy];
+        const tn = rotate(nPoint[0], nPoint[1], sx, sy, angle);
+        // 求 鼠标点 与 起始点的向量 在 tn点 与 起始点向量上投影的距离值 即为移动的距离
+        // 向量a在向量b上的投影：设a、b向量的模分别为A、B，两向量夹角为θ，则a在b上的投影大小为Acosθ，而两向量的点积a·b=ABcosθ，所以cosθ=a·b/(AB)。则a在b上的投影为Acosθ=Aa·b/(AB)=a·b/B
+        const a = { x: mx - sx, y: my - sy };
+        const b = { x: tn[0] - sx, y: tn[1] - sy };
+        // const A = Math.hypot(a.x, a.y);
+        const B = Math.hypot(b.x, b.y);
+        const a·b = a.x * b.x + a.y * b.y;
+
+        // 移动距离
+        const move = a·b / B * direction;
+
+        const newWidth = oldWidth - move;
+        const scaleX = newWidth / oldWidth;
+
+        // 中心点坐标
+        const { cx, cy } = getElementCenterOnCanvas(selectedElement.value);
+        const { x, y } = selectedElement.value;
+
+        // 旋转后的原点坐标
+        const [tx, ty] = rotate(x, y, cx, cy, angle);
+        // 原点偏移
+        const originOffset = Math.abs(originX) * (scaleX - 1);
+        // 计算偏移后的原点坐标
+        const tx1 = tx + originOffset * Math.cos(angle) * direction;
+        const ty1 = ty + originOffset * Math.sin(angle) * direction;
+
+        // 中心点偏移距离
         const centerOffset = (newWidth - oldWidth) / 2
-        const tx1 = tx - originOffset * Math.cos(angle);
-        const ty1 = ty - originOffset * Math.sin(angle);
-        const cx = centerX - centerOffset * Math.cos(angle);
-        const cy = centerY - centerOffset * Math.sin(angle);
-        const [otx, oty] = rotate(tx1, ty1, cx, cy, -angle);
+        // 计算中心点偏移后的坐标
+        const cx1 = cx + centerOffset * Math.cos(angle) * direction;
+        const cy1 = cy + centerOffset * Math.sin(angle) * direction;
+
+        // 计算逆向旋转回来的原点坐标
+        const [otx, oty] = rotate(tx1, ty1, cx1, cy1, -angle);
         if (optionElement) {
             points.forEach(point => point[0] = point[0] * scaleX);
             updateElement(optionElement, {
@@ -64,22 +97,65 @@ export default (
 
     /**
      * 纵向变动
-     * @param moveY 
+     * @param mx 
+     * @param my 
+     * @param sx 
+     * @param sy 
+     * @param direction 
      * @param originY 
+     * @param points 
+     * @param optionElement 
      * @returns 
      */
-    const verticalZoom = (moveY: number, originY: number, points: IPoint[]) => {
-        if (!selectedElement.value) return;
-        const oldHeight = selectedElement.value.height;
-        const newHeight = oldHeight - moveY;
+    const verticalZoom = (mx: number, my: number, sx: number, sy: number, direction: number, originY: number, points: IPoint[], optionElement?: IElement) => {
+        if (!selectedElement.value || !optionElement) return;
+        const oldHeight = Math.abs(selectedElement.value.height);
+        const angle = selectedElement.value.angle;
+
+        // 在sx,sy以y轴平行的线段上取任意一点 绕sx，sy旋转angle
+        const nPoint = [sx, sy - 10];
+        const tn = rotate(nPoint[0], nPoint[1], sx, sy, angle);
+        // 求 鼠标点 与 起始点的向量 在 tn点 与 起始点向量上投影的距离值 即为移动的距离
+        // 向量a在向量b上的投影：设a、b向量的模分别为A、B，两向量夹角为θ，则a在b上的投影大小为Acosθ，而两向量的点积a·b=ABcosθ，所以cosθ=a·b/(AB)。则a在b上的投影为Acosθ=Aa·b/(AB)=a·b/B
+        const a = { x: mx - sx, y: my - sy };
+        const b = { x: tn[0] - sx, y: tn[1] - sy };
+        // const A = Math.hypot(a.x, a.y);
+        const B = Math.hypot(b.x, b.y);
+        const a·b = a.x * b.x + a.y * b.y;
+
+        // 移动距离
+        const move = a·b / B * direction;
+
+        const newHeight = oldHeight - move;
         const scaleY = newHeight / oldHeight;
-        const optionElement = getTargetElement(selectedElement.value!.id, elements.value);
+
+        // 中心点坐标
+        const { cx, cy } = getElementCenterOnCanvas(selectedElement.value);
+        const { x, y } = selectedElement.value;
+
+        // 旋转后的原点坐标
+        const [tx, ty] = rotate(x, y, cx, cy, angle);
+        // 原点偏移
+        const originOffset = Math.abs(originY) * (scaleY - 1);
+        // 计算偏移后的原点坐标
+        const tx1 = tx - originOffset * Math.sin(angle) * direction;
+        const ty1 = ty + originOffset * Math.cos(angle) * direction;
+
+        // 中心点偏移距离
+        const centerOffset = (newHeight - oldHeight) / 2
+        // 计算中心点偏移后的坐标
+        const cx1 = cx - centerOffset * Math.sin(angle) * direction;
+        const cy1 = cy + centerOffset * Math.cos(angle) * direction;
+
+        // 计算逆向旋转回来的原点坐标
+        const [otx, oty] = rotate(tx1, ty1, cx1, cy1, -angle);
         if (optionElement) {
             points.forEach(point => point[1] = point[1] * scaleY);
             updateElement(optionElement, {
                 height: newHeight,
                 points,
-                y: selectedElement.value.y + originY * (1 - scaleY)
+                x: otx,
+                y: oty
             });
         }
     }
@@ -102,9 +178,9 @@ export default (
             }
             case ELEMENT_RESIZE.ANGLE: {
                 if (optionElement) {
-                    const { centerX, centerY } = getElementCenterOnCanvas(selectedElement.value);
-                    const startAngle = Math.atan2(startPoint[1] - centerY, startPoint[0] - centerX);
-                    const changeAngle = Math.atan2(y - centerY, x - centerX) - startAngle;
+                    const { cx, cy } = getElementCenterOnCanvas(selectedElement.value);
+                    const startAngle = Math.atan2(startPoint[1] - cy, startPoint[0] - cx);
+                    const changeAngle = Math.atan2(y - cy, x - cx) - startAngle;
                     const angle = normalizeAngle(selectedElement.value.angle + changeAngle);
                     updateElement(optionElement, {
                         angle
@@ -122,19 +198,19 @@ export default (
             case ELEMENT_RESIZE.RIGHT_BOTTOM: {
                 const points = deepClone(selectedElement.value.points);
                 if (/LEFT/.test(canvasConfig.elementOption)) {
-                    horizontalZoom(moveX * Math.sign(selectedElement.value.width), maxX, points);
+                    horizontalZoom(x, y, startPoint[0], startPoint[1], -1, maxX, points, optionElement);
                 }
 
                 if (/RIGHT/.test(canvasConfig.elementOption)) {
-                    horizontalZoom(- moveX * Math.sign(selectedElement.value.width), minX, points);
+                    horizontalZoom(x, y, startPoint[0], startPoint[1], 1, minX, points, optionElement);
                 }
 
                 if (/TOP/.test(canvasConfig.elementOption)) {
-                    verticalZoom(moveY * Math.sign(selectedElement.value.height), maxY, points);
+                    verticalZoom(x, y, startPoint[0], startPoint[1], -1, maxY, points, optionElement);
                 }
 
                 if (/BOTTOM/.test(canvasConfig.elementOption)) {
-                    verticalZoom(- moveY * Math.sign(selectedElement.value.height), minY, points);
+                    verticalZoom(x, y, startPoint[0], startPoint[1], 1, minY, points, optionElement);
                 }
                 break;
             }
