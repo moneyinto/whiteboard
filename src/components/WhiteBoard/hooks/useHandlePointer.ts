@@ -91,6 +91,8 @@ export default (
                         canvasConfig.elementOption = elementOption;
                     }
                     if (canvasConfig.elementOption) {
+                        // 更新一下选中元素
+                        selectedElement.value = deepClone(getTargetElement(selectedElement.value.id, elements.value));
                         canvasConfig.isElementOption = true;
                     }
                 }
