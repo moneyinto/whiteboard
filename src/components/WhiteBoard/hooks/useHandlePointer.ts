@@ -213,7 +213,6 @@ export default (
 
     const handleUp = (event: PointerEvent | TouchEvent) => {
         // if ((event.target as HTMLElement).tagName !== "CANVAS") return;
-        console.log("up---------------");
         if (canvasConfig.isDrawing)  {
             switch (canvasConfig.optionType) {
                 case OPTION_TYPE.MOUSE: {
