@@ -19,7 +19,7 @@ export default (
     canvasConfig: ICanvasConfig,
     selectedElement: Ref<IElement | undefined>
 ) => {
-    const { updateElement } = useUpdateElement();
+    const { updateElement } = useUpdateElement(elements);
     const { renderElements } = useRenderElement(
         canvas,
         context,

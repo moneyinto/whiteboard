@@ -30,7 +30,7 @@ export default (
     selectedElement: Ref<IElement | undefined>
 ) => {
     const { createPenElement } = useCreateElement(elements, canvasConfig);
-    const { updateElement } = useUpdateElement();
+    const { updateElement } = useUpdateElement(elements);
     const { renderElements } = useRenderElement(canvas, context, canvasConfig, selectedElement);
     const { optionElement } = useOptionElement(canvas, context, elements, canvasConfig, selectedElement);
     const { addHistorySnapshot } = useHistorySnapshot(elements, snapshotKeys, snapshotCursor);
@@ -60,6 +60,7 @@ export default (
     };
 
     const handleDown = (event: PointerEvent | TouchEvent) => {
+        if ((event.target as HTMLElement).tagName !== "CANVAS") return;
         if (canvasConfig.isMoveOrScale) {
             const { x, y } = getWhiteBoardPointPosition(
                 event,
@@ -130,6 +131,7 @@ export default (
     };
 
     const handleMove = throttleRAF((event: PointerEvent | TouchEvent) => {
+        // if ((event.target as HTMLElement).tagName !== "CANVAS") return;
         // 绘制
         if (canvasConfig.isDrawing) {
             switch (canvasConfig.optionType) {
@@ -210,6 +212,8 @@ export default (
     };
 
     const handleUp = (event: PointerEvent | TouchEvent) => {
+        // if ((event.target as HTMLElement).tagName !== "CANVAS") return;
+        console.log("up---------------");
         if (canvasConfig.isDrawing)  {
             switch (canvasConfig.optionType) {
                 case OPTION_TYPE.MOUSE: {
