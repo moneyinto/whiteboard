@@ -1,3 +1,7 @@
+<p align="center">
+    <img style="width: 192px;" src="./public/favicon.png" />
+</p>
+
 # 一个基于vue3+typescript的画板 (学习canvas + vue3 + typescript)
 
 ## 项目目录结构
